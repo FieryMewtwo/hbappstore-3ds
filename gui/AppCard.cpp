@@ -1,5 +1,6 @@
 #include "AppCard.hpp"
 #include "MainDisplay.hpp"
+#include "chesto/src/CommonColors.hpp"
 
 AppCard::AppCard(Package* package)
 {
@@ -31,9 +32,6 @@ void AppCard::update()
 	this->elements.push_back(icon);
 
 	int size = 13;
-
-	SDL_Color gray = { 80, 80, 80, 0xff };
-	SDL_Color black = { 0, 0, 0, 0xff };
 
 	// version
 	TextElement* version = new TextElement(("v. " + package->version).c_str(), size, &gray);

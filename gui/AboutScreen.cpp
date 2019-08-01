@@ -6,6 +6,7 @@
 
 #include "chesto/src/Button.hpp"
 #include "chesto/src/RootDisplay.hpp"
+#include "chesto/src/CommonColors.hpp"
 
 #include "AboutScreen.hpp"
 #include "Feedback.hpp"
@@ -14,11 +15,6 @@
 AboutScreen::AboutScreen(Get* get)
 {
 	this->get = get;
-
-	SDL_Color red = { 0xFF, 0x00, 0x00, 0xff };
-	SDL_Color gray = { 0x50, 0x50, 0x50, 0xff };
-	SDL_Color black = { 0x00, 0x00, 0x00, 0xff };
-	SDL_Color white = { 0xFF, 0xFF, 0xFF, 0xff };
 
 	// TODO: show current app status somewhere
 

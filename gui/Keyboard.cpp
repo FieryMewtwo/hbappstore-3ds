@@ -1,6 +1,7 @@
 #include "Keyboard.hpp"
 #include "AppList.hpp"
 #include "Feedback.hpp"
+#include "chesto/src/CommonColors.hpp"
 
 Keyboard::Keyboard(AppList* appList, std::string* myText, Feedback* feedback)
 {
@@ -257,7 +258,6 @@ void Keyboard::updateSize()
 	rows.push_back(row1);
 	rows.push_back(row2);
 	rows.push_back(row3);
-	SDL_Color gray = { 0x52, 0x52, 0x52, 0xff };
 
 	// go through and draw each of the three rows at the right position
 	for (int x = 0; x < rows.size(); x++)
