@@ -26,6 +26,3 @@ Build:
       - appstore.bin
       - appstore.rpx
       - appstore.nro
-
-  only:
-    - master
