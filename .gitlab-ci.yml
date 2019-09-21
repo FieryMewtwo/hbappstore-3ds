@@ -7,22 +7,28 @@ variables:
   DEVKITPPC: "/opt/devkitpro/devkitPPC"
   WUT_ROOT: "/opt/devkitpro/wut"
 
-Build:
-  stage: build
+.common: &common
   script:
-    - apt-get update && apt-get -y install sudo
-
-    - PLATFORM=pc ./dependency_helper.sh
-    - make -f Makefile.pc
-
-    - PLATFORM=wiiu ./dependency_helper.sh
-    - make -f Makefile.wiiu
-
-    - PLATFORM=switch ./dependency_helper.sh
-    - make -f Makefile.switch
-
+    - PLATFORM=$PLATFORM ./dependency_helper.sh
+    - make -f Makefile.$PLATFORM
   artifacts:
     paths:
-      - appstore.bin
-      - appstore.rpx
-      - appstore.nro
+      - appstore-$CI_COMMIT_TAG.$EXT
+
+PC:
+  <<: *common
+  variables:
+    PLATFORM=pc
+    EXT=bin
+
+WiiU:
+  <<: *common
+  variables:
+    PLATFORM=wiiu
+    EXT=rpx
+
+Switch:
+  <<: *common
+  variables:
+    PLATFORM=switch
+    EXT=nro
