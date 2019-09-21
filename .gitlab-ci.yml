@@ -18,17 +18,17 @@ variables:
 PC:
   <<: *common
   variables:
-    PLATFORM=pc
-    EXT=bin
+    PLATFORM: pc
+    EXT: bin
 
 WiiU:
   <<: *common
   variables:
-    PLATFORM=wiiu
-    EXT=rpx
+    PLATFORM: wiiu
+    EXT: rpx
 
 Switch:
   <<: *common
   variables:
-    PLATFORM=switch
-    EXT=nro
+    PLATFORM: switch
+    EXT: nro
