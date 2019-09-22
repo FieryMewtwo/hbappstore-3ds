@@ -8,6 +8,8 @@
 # on various platforms
 
 if ! [ -x "$(command -v sudo)" ]; then
+  shopt -s expand_aliases
+  apt-get update
   alias sudo="$*"
 fi
 
