@@ -8,7 +8,7 @@
 # on various platforms
 
 if ! [ -x "$(command -v sudo)" ]; then
-  apt-get update && apt-get install wget sudo
+  apt-get update && apt-get install -y wget sudo
 fi
 
 setup_dkp_repo () {
