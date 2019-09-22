@@ -7,22 +7,23 @@
 # help if you are interested in seeing how the dependencies come together
 # on various platforms
 
-if ! [ -x "$(command -v sudo)" ]; then
-  apt-get update && apt-get install -y wget sudo
-fi
+install_container_deps () {
+  apt-get update && apt-get install -y wget sudo gpg libxml2 xz-utils lzma build-essential
+  touch /trustdb.gpg
+}
 
 setup_dkp_repo () {
-  # todo: containerize build in fedora, and use real pacman instead of dkp fork
   wget https://github.com/devkitPro/pacman/releases/download/devkitpro-pacman-1.0.1/devkitpro-pacman.deb
   sudo dpkg -i devkitpro-pacman.deb
-
-  # sudo pacman-key --recv F7FD5492264BB9D0
-  # sudo pacman-key --lsign F7FD5492264BB9D0
 }
 
 install_intel_deps () {
   sudo apt-get -y install wget git libsdl2-dev libsdl2-ttf-dev libsdl2-image-dev libsdl2-gfx-dev zlib1g-dev gcc g++ libcurl4-openssl-dev
 }
+
+if ! [ -x "$(command -v sudo)" ]; then
+  install_container_deps
+fi
 
 case "${PLATFORM}" in
   pc)
