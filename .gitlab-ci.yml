@@ -13,7 +13,7 @@ variables:
     - make -f Makefile.$PLATFORM
   artifacts:
     paths:
-      - appstore-$CI_COMMIT_TAG.$EXT
+      - appstore.$EXT
 
 PC:
   <<: *common
