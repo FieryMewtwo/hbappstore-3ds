@@ -8,7 +8,7 @@
 # on various platforms
 
 install_container_deps () {
-  apt-get update && apt-get install -y wget sudo libxml2 xz-utils lzma build-essential
+  apt-get update && apt-get install -y wget sudo libxml2 xz-utils lzma build-essential haveged
   touch /trustdb.gpg
 }
 
