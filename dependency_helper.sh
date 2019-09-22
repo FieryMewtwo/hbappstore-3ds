@@ -7,6 +7,10 @@
 # help if you are interested in seeing how the dependencies come together
 # on various platforms
 
+if ! [ -x "$(command -v sudo)" ]; then
+  alias sudo="$*"
+fi
+
 setup_dkp_repo () {
   # todo: containerize build in fedora, and use real pacman instead of dkp fork
   wget https://github.com/devkitPro/pacman/releases/download/devkitpro-pacman-1.0.1/devkitpro-pacman.deb
