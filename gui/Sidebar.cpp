@@ -152,7 +152,7 @@ bool Sidebar::process(InputEvents* event)
 				if (this->appList != NULL)
 				{
 					this->appList->y = 0;
-					this->appList->updateCategory();
+					this->appList->update();
 				}
 			}
 		}

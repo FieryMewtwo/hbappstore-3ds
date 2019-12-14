@@ -35,6 +35,9 @@ AppList::AppList(Get* get, Sidebar* sidebar)
 	// the offset of how far along scroll'd we are
 	this->y = 0;
 
+	// initialize random numbers used for sorting
+	std::srand(unsigned(std::time(0)));
+
 	// quit button
 	quitBtn.position(720 + 260 * (R - 3), 70);
 	quitBtn.action = quit;
@@ -192,8 +195,11 @@ bool AppList::process(InputEvents* event)
 		if (this->highlighted < R)
 			this->y = 0;
 
-		if (this->elements[this->highlighted])
+		if (this->elements[this->highlighted] && this->elements[this->highlighted]->elasticCounter == NO_HIGHLIGHT)
+		{
 			this->elements[this->highlighted]->elasticCounter = THICK_HIGHLIGHT;
+			ret |= true;
+		}
 	}
 
 	// highlight was modified, we need to redraw
@@ -207,6 +213,7 @@ bool AppList::process(InputEvents* event)
 
 AppList::~AppList()
 {
+	delete spinner;
 	delete category;
 	delete sortBlurb;
 }
@@ -229,17 +236,17 @@ void AppList::render(Element* parent)
 	super::render(this);
 }
 
-bool AppList::sortCompare(const AppCard &left, const AppCard &right)
+bool AppList::sortCompare(const Package* left, const Package* right)
 {
 	// handle the supported sorting modes
 	switch (sortMode)
 	{
 		case ALPHABETICAL:
-			return left.package->title.compare(right.package->title) < 0;
+			return left->title.compare(right->title) < 0;
 		case POPULARITY:
-			return left.package->downloads > right.package->downloads;
+			return left->downloads > right->downloads;
 		case SIZE:
-			return left.package->download_size > right.package->download_size;
+			return left->download_size > right->download_size;
 		case RECENT:
 			break;
 		default:
@@ -259,99 +266,75 @@ bool AppList::sortCompare(const AppCard &left, const AppCard &right)
 		}
 		return 4;
 	};
-	if (statusPriority(left.package->status) > statusPriority(right.package->status))
+	if (statusPriority(left->status) > statusPriority(right->status))
 		return true;
 
 	// if the status is the same, proceed with RECENT ordering
-	return left.package->updated_timestamp > right.package->updated_timestamp;
+	return left->updated_timestamp > right->updated_timestamp;
 }
 
-void AppList::updateSort()
+void AppList::update()
 {
-	std::vector<std::reference_wrapper<AppCard>> r_appCards(appCards.begin(), appCards.end());
+	if (!get)
+		return;
 
-	// sort the cards
-	if (sortMode == RANDOM)
-		std::shuffle(r_appCards.begin(), r_appCards.end(), randDevice);
-	else
-		std::sort(r_appCards.begin(), r_appCards.end(), std::bind(&AppList::sortCompare, this, std::placeholders::_1, std::placeholders::_2));
+	// remove elements
+	super::removeAll();
 
-	// update the cards
-	int i = 0;
-	for (auto& r_card : r_appCards)
-	{
-		AppCard& card = r_card.get();
-		card.index = i++;
-		card.position(25 + (card.index % R) * 265, 145 + (card.height + 15) * (card.index / R));
-		card.update();
-	}
-
-	// update sorting mode text
-	super::remove(sortBlurb);
+	// destroy old elements
+	appCards.clear();
+	delete spinner;
+	spinner = nullptr;
+	delete category;
+	category = nullptr;
 	delete sortBlurb;
 	sortBlurb = nullptr;
 
-	if (sidebar->currentCatValue() != "_search")
-	{
-		// display the search type next to the category in a gray font
-		sortBlurb = new TextElement(sortingDescriptions[sortMode], 15, &gray);
-		sortBlurb->position(category->x + category->width + 15, category->y + 12);
-		super::append(sortBlurb);
-	}
-}
-
-void AppList::updateCategory()
-{
 	// the current category value from the sidebar
 	std::string curCategoryValue = sidebar->currentCatValue();
-
-	// remove old elements
-	super::removeAll();
-
-	// destroy old category text
-	delete category;
-	category = nullptr;
-
-	// destroy old AppCards
-	appCards.clear();
 
 	// all packages TODO: move some of this filtering logic into main get library
 	// if it's a search, do a search query through get rather than using all packages
 	std::vector<Package*> packages = (curCategoryValue == "_search")
-		? get->search(this->sidebar->searchQuery)
+		? get->search(sidebar->searchQuery)
 		: get->packages;
 
-	// check if the packages belong to the current category
-	// and create the respective AppCards
+	// sort the packages
+	if (sortMode == RANDOM)
+		std::shuffle(packages.begin(), packages.end(), randDevice);
+	else
+		std::sort(packages.begin(), packages.end(), std::bind(&AppList::sortCompare, this, std::placeholders::_1, std::placeholders::_2));
+
+	// add AppCards for the packages belonging to the current category
 	for (auto &package : packages)
 	{
-		// if we're on all categories, or this package matches the current category (or it's a search (prefiltered))
-		// OR it's *not* any of the other categories, and we're on misc
-		if ((curCategoryValue == "_all" || curCategoryValue == package->category || curCategoryValue == "_search") || curCategoryValue == "_misc")
+		if (curCategoryValue == "_misc")
 		{
-
-			if (curCategoryValue == "_misc")
-			{
-				bool matchedCat = false;
-				for (int y = 0; y < TOTAL_CATS; y++)
-					if (this->sidebar->cat_value[y] == package->category)
-						matchedCat = true;
-
-				if (matchedCat)
-					continue;
-			}
-
-			appCards.emplace_back(package, this);
-			super::append(&appCards.back());
+			// if we're on misc, filter out packages belonging to some category
+			if (std::find(std::begin(sidebar->cat_value), std::end(sidebar->cat_value), package->category) != std::end(sidebar->cat_value))
+				continue;
 		}
-	}
+		else if (curCategoryValue != "_all" && curCategoryValue != "_search")
+		{
+			// if we're in a specific category, filter out package of different categories
+			if (curCategoryValue != package->category)
+				continue;
+		}
 
-	this->totalCount = appCards.size();
+		// create and position the AppCard for the package
+		appCards.emplace_back(package, this);
+		AppCard& card = appCards.back();
+		card.index = appCards.size() - 1;
+		card.position(25 + (card.index % R) * 265, 145 + (card.height + 15) * (card.index / R));
+		card.update();
+		super::append(&card);
+	}
+	totalCount = appCards.size();
 
 	// add quit button
 	super::append(&quitBtn);
 
-	// update view for search or category
+	// update the view for the current category
 	if (curCategoryValue == "_search")
 	{
 		// add the keyboard
@@ -359,7 +342,9 @@ void AppList::updateCategory()
 		super::append(&keyboard);
 
 		// category text
-		category = new TextElement((std::string("Search: \"") + this->sidebar->searchQuery + "\"").c_str(), 28, &black);
+		category = new TextElement((std::string("Search: \"") + sidebar->searchQuery + "\"").c_str(), 28, &black);
+		category->position(20, 90);
+		super::append(category);
 	}
 	else
 	{
@@ -372,29 +357,15 @@ void AppList::updateCategory()
 #endif
 
 		// category text
-		category = new TextElement(this->sidebar->currentCatName().c_str(), 28, &black);
+		category = new TextElement(sidebar->currentCatName().c_str(), 28, &black);
+		category->position(20, 90);
+		super::append(category);
+
+		// add the search type next to the category in a gray font
+		sortBlurb = new TextElement(sortingDescriptions[sortMode], 15, &gray);
+		sortBlurb->position(category->x + category->width + 15, category->y + 12);
+		super::append(sortBlurb);
 	}
-
-	category->position(20, 90);
-	super::append(category);
-
-	// sort and position the new packages
-	updateSort();
-}
-
-void AppList::update()
-{
-	if (this->get == NULL)
-		return;
-
-	if (spinner)
-	{
-		super::remove(spinner);
-		delete spinner;
-		spinner = nullptr;
-	}
-
-	updateCategory();
 }
 
 void AppList::reorient()
@@ -408,7 +379,7 @@ void AppList::cycleSort()
 {
 	reorient();
 	sortMode = (sortMode + 1) % TOTAL_SORTS;
-	updateSort();
+	update();
 }
 
 void AppList::toggleAudio()

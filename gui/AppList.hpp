@@ -30,8 +30,6 @@ public:
 
 	bool process(InputEvents* event);
 	void render(Element* parent);
-	void updateSort();
-	void updateCategory();
 	void update();
 
 	Get* get = NULL;
@@ -41,9 +39,6 @@ public:
 	void cycleSort();
 	void reorient();
 	void toggleAudio();
-	void exit();
-
-	const char* applySortOrder(std::vector<Package*>* packages);
 
 	bool touchMode = true;
 
@@ -61,7 +56,7 @@ public:
 	ImageElement* spinner = nullptr;
 
 private:
-	bool sortCompare(const AppCard &left, const AppCard &right);
+	bool sortCompare(const Package* left, const Package* right);
 	std::random_device randDevice;
 
 	// the title of this category (from the sidebar)
