@@ -28,8 +28,8 @@ private:
 	TextElement title;
 	NetImageElement icon;
 	Keyboard keyboard;
-	Button send;
 	Button quit;
+	Button send;
 	TextElement response;
 #if defined(__WIIU__)
 	TextElement hint;
