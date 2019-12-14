@@ -23,12 +23,12 @@ AppDetails::AppDetails(Package* package, AppList* appList)
 	: package(package)
 	, get(appList->get)
 	, appList(appList)
+	, downloadProgress()
 	, download(getAction(package), A_BUTTON, true, 30)
 	, cancel("Cancel", B_BUTTON, true, 30, download.width)
 	, details(getPackageDetails(package).c_str(), 20, &white, false, 300)
 	, content(package)
 	, downloadStatus("Downloading package...", 30)
-	, downloadProgress()
 {
 	// TODO: show current app status somewhere
 
@@ -435,9 +435,9 @@ int AppDetails::updateCurrentlyDisplayedPopup(void* clientp, double dltotal, dou
 }
 
 AppDetailsContent::AppDetailsContent(Package *package)
-	: title(package->title.c_str(), 35, &black)
-	, reportIssue("Report Issue", Y_BUTTON)
+	: reportIssue("Report Issue", Y_BUTTON)
 	, moreByAuthor("More by Author", X_BUTTON)
+	, title(package->title.c_str(), 35, &black)
 	, title2(package->author.c_str(), 27, &gray)
 	, details(package->long_desc.c_str(), 20, &black, false, 740)
 	, changelog((std::string("Changelog:\n") + package->changelog).c_str(), 20, &black, false, 740)

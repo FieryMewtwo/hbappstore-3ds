@@ -8,8 +8,8 @@ SDL_Color AppCard::gray = { 80, 80, 80, 0xff };
 SDL_Color AppCard::black = { 0, 0, 0, 0xff };
 
 AppCard::AppCard(Package* package, AppList* list)
-	: list(list)
-	, package(package)
+	: package(package)
+	, list(list)
 	, icon(package->getIconUrl().c_str(), []{
 				return new ImageElement(RAMFS "res/default.png");
 			},

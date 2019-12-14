@@ -58,9 +58,10 @@ private:
 
 	TextElement title;
 	TextElement subtitle;
-	TextElement creds;
 
 	NetImageElement ftuLogo;
+
+	TextElement creds;
 
 	std::list<CreditHead> creditHeads;
 	std::list<Credit> credits;

@@ -33,10 +33,10 @@ private:
 	const int BANNER_Y = 140;
 
 	TextElement title;
-	NetImageElement banner;
 	TextElement title2;
 	TextElement details;
 	TextElement changelog;
+	NetImageElement banner;
 };
 
 

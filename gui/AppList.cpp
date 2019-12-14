@@ -20,11 +20,11 @@ SDL_Color AppList::gray = { 0x50, 0x50, 0x50, 0xff };
 AppList::AppList(Get* get, Sidebar* sidebar)
 	: get(get)			// the main get instance that contains repo info and stuff
 	, sidebar(sidebar)	// the sidebar, which will store the currently selected category info
+	, keyboard(this, &this->sidebar->searchQuery)
 	, quitBtn("Quit", SELECT_BUTTON, false, 15)
 	, creditsBtn("Credits", X_BUTTON, false, 15)
 	, sortBtn("Adjust Sort", Y_BUTTON, false, 15)
 	, keyboardBtn("Toggle Keyboard", Y_BUTTON, false, 15)
-	, keyboard(this, &this->sidebar->searchQuery)
 #if defined(MUSIC)
 	, muteBtn(" ", 0, false, 15, 43)
 	, muteIcon(RAMFS "res/mute.png")
@@ -262,7 +262,6 @@ bool AppList::sortCompare(const Package* left, const Package* right)
 			case INSTALLED:	return 1;
 			case LOCAL:		return 2;
 			case GET:		return 3;
-			defalut:		break;
 		}
 		return 4;
 	};

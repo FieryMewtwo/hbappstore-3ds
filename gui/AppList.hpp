@@ -68,11 +68,12 @@ private:
 	Button quitBtn;
 	Button creditsBtn;
 	Button sortBtn;
+	Button keyboardBtn;
+
 #if defined(MUSIC)
 	Button muteBtn;
 	ImageElement muteIcon;
 #endif
-	Button keyboardBtn;
 
 	// list of visible app cards
 	std::list<AppCard> appCards;
