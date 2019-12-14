@@ -265,11 +265,13 @@ bool AppList::sortCompare(const Package* left, const Package* right)
 		}
 		return 4;
 	};
-	if (statusPriority(left->status) < statusPriority(right->status))
-		return true;
+	int priorityLeft = statusPriority(left->status);
+	int priorityRight = statusPriority(right->status);
 
-	// if the status is the same, proceed with RECENT ordering
-	return left->updated_timestamp > right->updated_timestamp;
+	if (priorityLeft == priorityRight)
+		return left->updated_timestamp > right->updated_timestamp;
+
+	return priorityLeft < priorityRight;
 }
 
 void AppList::update()
