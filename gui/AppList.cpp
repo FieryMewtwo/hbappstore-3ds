@@ -1,12 +1,10 @@
 #include "AppList.hpp"
 #include "AboutScreen.hpp"
-#include "AppCard.hpp"
 #include "Keyboard.hpp"
 #include "main.hpp"
 
 #include "../libs/get/src/Utils.hpp"
 
-#include "../libs/chesto/src/Button.hpp"
 #include "../libs/chesto/src/RootDisplay.hpp"
 
 #include <SDL2/SDL2_gfxPrimitives.h>
@@ -15,34 +13,57 @@
 #include <cstdlib> // std::rand, std::srand
 #include <ctime>   // std::time
 
+const char* AppList::sortingDescriptions[TOTAL_SORTS] = { "by most recent", "by download count", "alphabetically", "by size (descending)", "randomly" };
+SDL_Color AppList::black = { 0, 0, 0, 0xff };
+SDL_Color AppList::gray = { 0x50, 0x50, 0x50, 0xff };
+
 AppList::AppList(Get* get, Sidebar* sidebar)
+	: get(get)			// the main get instance that contains repo info and stuff
+	, sidebar(sidebar)	// the sidebar, which will store the currently selected category info
+	, quitBtn("Quit", SELECT_BUTTON, false, 15)
+	, creditsBtn("Credits", X_BUTTON, false, 15)
+	, sortBtn("Adjust Sort", Y_BUTTON, false, 15)
+	, keyboardBtn("Toggle Keyboard", Y_BUTTON, false, 15)
+	, keyboard(this, &this->sidebar->searchQuery)
+#if defined(MUSIC)
+	, muteBtn(" ", 0, false, 15, 43)
+	, muteIcon(RAMFS "res/mute.png")
+#endif
 {
 	this->x = 400 - 260 * (R - 3);
 
 	// the offset of how far along scroll'd we are
 	this->y = 0;
 
-	// the main get instance that contains repo info and stuff
-	this->get = get;
+	// quit button
+	quitBtn.position(720 + 260 * (R - 3), 70);
+	quitBtn.action = quit;
 
-	// the sidebar, which will store the currently selected category info
-	this->sidebar = sidebar;
+	// additional buttons
+	creditsBtn.position(quitBtn.x - 20 - creditsBtn.width, quitBtn.y);
+	creditsBtn.action = std::bind(&AppList::launchSettings, this);
+	sortBtn.position(creditsBtn.x - 20 - sortBtn.width, quitBtn.y);
+	sortBtn.action = std::bind(&AppList::cycleSort, this);
+#if defined(MUSIC)
+	muteBtn.position(sortBtn.x - 20 - muteBtn.width, quitBtn.y);
+	muteBtn.action = std::bind(&AppList::toggleAudio, this);
+	muteIcon.position(sortBtn.x - 20 - muteBtn.width + 5, quitBtn.y + 5);
+	muteIcon.resize(32, 32);
+#endif
 
-	// initialize random numbers used for sorting
-	std::srand(unsigned(std::time(0)));
+	// search buttons
+	keyboardBtn.position(quitBtn.x - 20 - keyboardBtn.width, quitBtn.y);
+	keyboardBtn.action = std::bind(&AppList::toggleKeyboard, this);
 
-  // initial loading message
-  ImageElement* spinner = new ImageElement(RAMFS "res/spinner.png");
-  spinner->position(395, 90);
-  spinner->resize(90, 90);
-  this->spinner = spinner;
-  this->elements.push_back(spinner);
+	// initial loading spinner
+	spinner = new ImageElement(RAMFS "res/spinner.png");
+	spinner->position(395, 90);
+	spinner->resize(90, 90);
+	super::append(spinner);
 
 	// update current app listing
 	update();
 }
-
-int myrandom(int i) { return std::rand() % i; }
 
 bool AppList::process(InputEvents* event)
 {
@@ -72,10 +93,10 @@ bool AppList::process(InputEvents* event)
 	// also make sure the children elements exist before trying the keyboard
 	// AND we're actually on the search category
 	// also if we're not in touchmode, always go in here regardless of any button presses (user can only interact with keyboard)
-	bool keyboardIsShowing = this->elements.size() > 0 && this->sidebar != NULL && this->sidebar->curCategory == 0 && this->keyboard != NULL && !this->keyboard->hidden;
-	if (keyboardIsShowing && ((event->isTouchDown() && event->touchIn(keyboard->x, keyboard->y, keyboard->width, keyboard->height)) || !touchMode))
+	bool keyboardIsShowing = !spinner && sidebar && sidebar->curCategory == 0 && !keyboard.hidden;
+	if (keyboardIsShowing && ((event->isTouchDown() && event->touchIn(keyboard.x, keyboard.y, keyboard.width, keyboard.height)) || !touchMode))
 	{
-		ret |= this->keyboard->process(event);
+		ret |= keyboard.process(event);
 		if (event->isKeyDown() && event->held(Y_BUTTON))
 			ret |= ListElement::process(event); // continue processing ONLY if they're pressing Y
 		return ret;
@@ -184,6 +205,12 @@ bool AppList::process(InputEvents* event)
 	return ret;
 }
 
+AppList::~AppList()
+{
+	delete category;
+	delete sortBlurb;
+}
+
 void AppList::render(Element* parent)
 {
 	if (this->parent == NULL)
@@ -202,220 +229,172 @@ void AppList::render(Element* parent)
 	super::render(this);
 }
 
-void AppList::update()
+bool AppList::sortCompare(const AppCard &left, const AppCard &right)
 {
-  if (this->get == NULL)
-    return;
-
-  this->spinner = NULL;
-
-	// if there's a keyboard, get its current highlighted positions
-	int kRow = -1, kIndex = -1;
-	if (this->keyboard)
+	// handle the supported sorting modes
+	switch (sortMode)
 	{
-		kRow = keyboard->curRow;
-		kIndex = keyboard->index;
+		case ALPHABETICAL:
+			return left.package->title.compare(right.package->title) < 0;
+		case POPULARITY:
+			return left.package->downloads > right.package->downloads;
+		case SIZE:
+			return left.package->download_size > right.package->download_size;
+		case RECENT:
+			break;
+		default:
+			break;
 	}
 
-	// remove any old elements
-	this->wipeElements();
+	// RECENT sort order is the default view, so it puts updates and installed apps first
+	auto statusPriority = [](int status)->int
+	{
+		switch (status)
+		{
+			case UPDATE:	return 0;
+			case INSTALLED:	return 1;
+			case LOCAL:		return 2;
+			case GET:		return 3;
+			defalut:		break;
+		}
+		return 4;
+	};
+	if (statusPriority(left.package->status) > statusPriority(right.package->status))
+		return true;
 
-	// quickly create a vector of "sorted" apps
-	// (they must be sorted by UPDATE -> INSTALLED -> LOCAL -> GET)
-	// TODO: sort this a better way, and also don't use 3 distinct for loops
-	std::vector<Package*> sorted;
+	// if the status is the same, proceed with RECENT ordering
+	return left.package->updated_timestamp > right.package->updated_timestamp;
+}
 
+void AppList::updateSort()
+{
+	std::vector<std::reference_wrapper<AppCard>> r_appCards(appCards.begin(), appCards.end());
+
+	// sort the cards
+	if (sortMode == RANDOM)
+		std::shuffle(r_appCards.begin(), r_appCards.end(), randDevice);
+	else
+		std::sort(r_appCards.begin(), r_appCards.end(), std::bind(&AppList::sortCompare, this, std::placeholders::_1, std::placeholders::_2));
+
+	// update the cards
+	int i = 0;
+	for (auto& r_card : r_appCards)
+	{
+		AppCard& card = r_card.get();
+		card.index = i++;
+		card.position(25 + (card.index % R) * 265, 145 + (card.height + 15) * (card.index / R));
+		card.update();
+	}
+
+	// update sorting mode text
+	super::remove(sortBlurb);
+	delete sortBlurb;
+	sortBlurb = nullptr;
+
+	if (sidebar->currentCatValue() != "_search")
+	{
+		// display the search type next to the category in a gray font
+		sortBlurb = new TextElement(sortingDescriptions[sortMode], 15, &gray);
+		sortBlurb->position(category->x + category->width + 15, category->y + 12);
+		super::append(sortBlurb);
+	}
+}
+
+void AppList::updateCategory()
+{
 	// the current category value from the sidebar
-	std::string curCategoryValue = this->sidebar->currentCatValue();
+	std::string curCategoryValue = sidebar->currentCatValue();
+
+	// remove old elements
+	super::removeAll();
+
+	// destroy old category text
+	delete category;
+	category = nullptr;
+
+	// destroy old AppCards
+	appCards.clear();
 
 	// all packages TODO: move some of this filtering logic into main get library
-	std::vector<Package*> packages = get->packages;
-
 	// if it's a search, do a search query through get rather than using all packages
-	if (curCategoryValue == "_search")
-		packages = get->search(this->sidebar->searchQuery);
+	std::vector<Package*> packages = (curCategoryValue == "_search")
+		? get->search(this->sidebar->searchQuery)
+		: get->packages;
 
-	// sort the packages list by whatever criteria is currently set
-	const char* sortString = applySortOrder(&packages);
-
-	if (this->sortMode == RECENT)
+	// check if the packages belong to the current category
+	// and create the respective AppCards
+	for (auto &package : packages)
 	{
-		// alphabetical sort order is the default view, so it puts updates and installed apps first
-
-		// update
-		for (int x = 0; x < packages.size(); x++)
-			if (packages[x]->status == UPDATE)
-				sorted.push_back(packages[x]);
-
-		// installed
-		for (int x = 0; x < packages.size(); x++)
-			if (packages[x]->status == INSTALLED)
-				sorted.push_back(packages[x]);
-
-		// local
-		for (int x = 0; x < packages.size(); x++)
-			if (packages[x]->status == LOCAL)
-				sorted.push_back(packages[x]);
-
-		// get
-		for (int x = 0; x < packages.size(); x++)
-			if (packages[x]->status == GET)
-				sorted.push_back(packages[x]);
-	}
-	else
-	{
-		// not alphabetical, just copy over to the sorted vector
-		for (int x = 0; x < packages.size(); x++)
-			sorted.push_back(packages[x]);
-	}
-
-	// total apps we're interested in so far
-	int count = 0;
-
-	for (int x = 0; x < sorted.size(); x++)
-	{
-		// networking_callback(0, 0, 0, 0, 0);
-
 		// if we're on all categories, or this package matches the current category (or it's a search (prefiltered))
 		// OR it's *not* any of the other categories, and we're on misc
-		if ((curCategoryValue == "_all" || curCategoryValue == sorted[x]->category || curCategoryValue == "_search") || curCategoryValue == "_misc")
+		if ((curCategoryValue == "_all" || curCategoryValue == package->category || curCategoryValue == "_search") || curCategoryValue == "_misc")
 		{
 
 			if (curCategoryValue == "_misc")
 			{
 				bool matchedCat = false;
 				for (int y = 0; y < TOTAL_CATS; y++)
-					if (this->sidebar->cat_value[y] == sorted[x]->category)
+					if (this->sidebar->cat_value[y] == package->category)
 						matchedCat = true;
 
 				if (matchedCat)
 					continue;
 			}
 
-			AppCard* card = new AppCard(sorted[x], this);
-			card->index = count;
-
-			this->elements.push_back(card);
-
-			// we drew an app, so increase the displayed app counter
-			count++;
+			appCards.emplace_back(package, this);
+			super::append(&appCards.back());
 		}
 	}
 
-	this->totalCount = count;
+	this->totalCount = appCards.size();
 
-	// position the filtered app card list
-	for (int x = 0; x < this->elements.size(); x++)
-	{
-		// every element after the first should be an app card (we just added them)
-		AppCard* card = (AppCard*)elements[x];
+	// add quit button
+	super::append(&quitBtn);
 
-		// position at proper x, y coordinates
-		card->position(25 + (x % R) * 265, 145 + (card->height + 15) * (x / R)); // TODO: extract formula into method (see above)
-		card->update();
-	}
-
-	// the title of this category (from the sidebar)
-	SDL_Color black = { 0, 0, 0, 0xff };
-	TextElement* category;
-
-	// if it's a search, add a keyboard
+	// update view for search or category
 	if (curCategoryValue == "_search")
 	{
-		this->keyboard = new Keyboard(this, &this->sidebar->searchQuery);
-		if (kRow >= 0 || kIndex >= 0)
-		{
-			this->keyboard->curRow = kRow;
-			this->keyboard->index = kIndex;
-		}
-		this->elements.push_back(keyboard);
+		// add the keyboard
+		super::append(&keyboardBtn);
+		super::append(&keyboard);
 
+		// category text
 		category = new TextElement((std::string("Search: \"") + this->sidebar->searchQuery + "\"").c_str(), 28, &black);
 	}
 	else
 	{
+		// add additional buttons
+		super::append(&creditsBtn);
+		super::append(&sortBtn);
+#if defined(MUSIC)
+		super::append(&muteBtn);
+		super::append(&muteIcon);
+#endif
+
+		// category text
 		category = new TextElement(this->sidebar->currentCatName().c_str(), 28, &black);
 	}
 
 	category->position(20, 90);
-	this->elements.push_back(category);
+	super::append(category);
 
-	Button* quit = new Button("Quit", SELECT_BUTTON, false, 15);
-	quit->position(720 + 260 * (R - 3), 70);
-	quit->action = std::bind(&AppList::exit, this);
-	this->elements.push_back(quit);
-
-	// additional buttons (only if not on search)
-	if (curCategoryValue != "_search")
-	{
-		Button* settings = new Button("Credits", X_BUTTON, false, 15);
-		settings->position(quit->x - 20 - settings->width, quit->y);
-		settings->action = std::bind(&AppList::launchSettings, this);
-		this->elements.push_back(settings);
-
-		Button* sort = new Button("Adjust Sort", Y_BUTTON, false, 15);
-		sort->position(settings->x - 20 - sort->width, quit->y);
-		sort->action = std::bind(&AppList::cycleSort, this);
-		this->elements.push_back(sort);
-
-#if defined(MUSIC)
-		Button* mute = new Button(" ", 0, false, 15, 43);
-		mute->position(sort->x - 20 - mute->width, settings->y);
-		mute->action = std::bind(&AppList::toggleAudio, this);
-		this->elements.push_back(mute);
-
-		ImageElement* muteIcon = new ImageElement(RAMFS "res/mute.png");
-		muteIcon->position(sort->x - 20 - mute->width + 5, settings->y + 5);
-		muteIcon->resize(32, 32);
-		this->elements.push_back(muteIcon);
-#endif
-
-SDL_Color gray = { 0x50, 0x50, 0x50, 0xff };
-
-		// display the search type next to the category in a gray font
-		TextElement* sortBlurb = new TextElement(sortString, 15, &gray);
-		sortBlurb->position(category->x + category->width + 15, category->y + 12);
-		this->elements.push_back(sortBlurb);
-	}
-	else
-	{
-		Button* settings = new Button("Toggle Keyboard", Y_BUTTON, false, 15);
-		// settings->position(625 + 260 * (R - 3), 70);
-		settings->position(quit->x - 20 - settings->width, quit->y);
-		settings->action = std::bind(&AppList::toggleKeyboard, this);
-		this->elements.push_back(settings);
-	}
+	// sort and position the new packages
+	updateSort();
 }
 
-const char* AppList::applySortOrder(std::vector<Package*>* p)
+void AppList::update()
 {
-	if (sortMode == ALPHABETICAL)
-		std::sort(p->begin(), p->end(),
-			[](const auto& lhs, const auto& rhs) {
-				return lhs->title.compare(rhs->title) < 0;
-			});
-	else if (sortMode == POPULARITY)
-		std::sort(p->begin(), p->end(),
-			[](const auto& lhs, const auto& rhs) {
-				return lhs->downloads > rhs->downloads;
-			});
-	else if (sortMode == RECENT)
-		std::sort(p->begin(), p->end(),
-			[](const auto& lhs, const auto& rhs) {
-				return lhs->updated_timestamp > rhs->updated_timestamp;
-			});
-	else if (sortMode == SIZE)
-		std::sort(p->begin(), p->end(),
-			[](const auto& lhs, const auto& rhs) {
-				return lhs->download_size > rhs->download_size;
-			});
-	else if (sortMode == RANDOM)
+	if (this->get == NULL)
+		return;
+
+	if (spinner)
 	{
-		std::random_shuffle(p->begin(), p->end(), myrandom);
+		super::remove(spinner);
+		delete spinner;
+		spinner = nullptr;
 	}
 
-	const char* humanStrings[] = { "by most recent", "by download count", "alphabetically", "by size (descending)", "randomly" };
-	return humanStrings[sortMode];
+	updateCategory();
 }
 
 void AppList::reorient()
@@ -428,13 +407,8 @@ void AppList::reorient()
 void AppList::cycleSort()
 {
 	reorient();
-	this->sortMode = (this->sortMode + 1) % TOTAL_SORTS;
-	this->update();
-}
-
-void AppList::exit()
-{
-	quit();
+	sortMode = (sortMode + 1) % TOTAL_SORTS;
+	updateSort();
 }
 
 void AppList::toggleAudio()
@@ -449,23 +423,20 @@ void AppList::toggleAudio()
 
 void AppList::toggleKeyboard()
 {
-	if (this->keyboard)
+	reorient();
+	keyboard.hidden = !keyboard.hidden;
+
+	// if it's hidden now, make sure we release our highlight
+	if (keyboard.hidden)
 	{
-		reorient();
-		this->keyboard->hidden = !this->keyboard->hidden;
-
-		// if it's hidden now, make sure we release our highlight
-		if (this->keyboard->hidden)
-		{
-			this->sidebar->highlighted = -1;
-			this->highlighted = 0;
-		}
-
-		this->needsRedraw = true;
+		sidebar->highlighted = -1;
+		highlighted = 0;
 	}
+
+	needsRedraw = true;
 }
 
 void AppList::launchSettings()
 {
-	RootDisplay::subscreen = new AboutScreen(this->get);
+	RootDisplay::switchSubscreen(new AboutScreen(this->get));
 }
