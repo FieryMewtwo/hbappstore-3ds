@@ -13,7 +13,7 @@
 #include "Sidebar.hpp"
 
 #include <random>
-#include <deque>
+#include <list>
 
 #define TOTAL_SORTS 5 // alphabetical (with updates at top), downloads, last updated, size, shuffled
 #define RECENT 0
