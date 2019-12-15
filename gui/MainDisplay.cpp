@@ -19,8 +19,8 @@ MainDisplay::MainDisplay()
 	// add in the sidebar, footer, and main app listing
 	sidebar.appList = &appList;
 
-	super::append(&appList);
 	super::append(&sidebar);
+	super::append(&appList);
 
 	needsRedraw = true;
 }
