@@ -39,23 +39,17 @@ AppList::AppList(Get* get, Sidebar* sidebar)
 	std::srand(unsigned(std::time(0)));
 
 	// quit button
-	quitBtn.position(720 + 260 * (R - 3), 70);
 	quitBtn.action = quit;
 
 	// additional buttons
-	creditsBtn.position(quitBtn.x - 20 - creditsBtn.width, quitBtn.y);
 	creditsBtn.action = std::bind(&AppList::launchSettings, this);
-	sortBtn.position(creditsBtn.x - 20 - sortBtn.width, quitBtn.y);
 	sortBtn.action = std::bind(&AppList::cycleSort, this);
 #if defined(MUSIC)
-	muteBtn.position(sortBtn.x - 20 - muteBtn.width, quitBtn.y);
 	muteBtn.action = std::bind(&AppList::toggleAudio, this);
-	muteIcon.position(sortBtn.x - 20 - muteBtn.width + 5, quitBtn.y + 5);
 	muteIcon.resize(32, 32);
 #endif
 
 	// search buttons
-	keyboardBtn.position(quitBtn.x - 20 - keyboardBtn.width, quitBtn.y);
 	keyboardBtn.action = std::bind(&AppList::toggleKeyboard, this);
 
 	// initial loading spinner
@@ -333,13 +327,16 @@ void AppList::update()
 	totalCount = appCards.size();
 
 	// add quit button
+	quitBtn.position(720 + 260 * (R - 3), 70);
 	super::append(&quitBtn);
 
 	// update the view for the current category
 	if (curCategoryValue == "_search")
 	{
 		// add the keyboard
+		keyboardBtn.position(quitBtn.x - 20 - keyboardBtn.width, quitBtn.y);
 		super::append(&keyboardBtn);
+		keyboard.position(372 + (3 - R) * 132, 417);
 		super::append(&keyboard);
 
 		// category text
@@ -350,10 +347,14 @@ void AppList::update()
 	else
 	{
 		// add additional buttons
+		creditsBtn.position(quitBtn.x - 20 - creditsBtn.width, quitBtn.y);
 		super::append(&creditsBtn);
+		sortBtn.position(creditsBtn.x - 20 - sortBtn.width, quitBtn.y);
 		super::append(&sortBtn);
 #if defined(MUSIC)
+		muteBtn.position(sortBtn.x - 20 - muteBtn.width, quitBtn.y);
 		super::append(&muteBtn);
+		muteIcon.position(sortBtn.x - 20 - muteBtn.width + 5, quitBtn.y + 5);
 		super::append(&muteIcon);
 #endif
 

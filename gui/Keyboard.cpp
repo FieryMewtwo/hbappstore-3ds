@@ -10,9 +10,6 @@ Keyboard::Keyboard(AppList* appList, std::string* myText, Feedback* feedback)
 	this->x = 372;
 	this->y = 417;
 
-	if (appList && appList->R == 4)
-		this->x = 240;
-
 	// set touchmode based on applist if it's present
 	if (appList)
 		touchMode = appList->touchMode;
