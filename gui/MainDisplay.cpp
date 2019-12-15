@@ -57,13 +57,13 @@ bool MainDisplay::process(InputEvents* event)
 
 		if (error)
 		{
-			ErrorScreen(std::string("Perform a connection test in the " PLATFORM " System Settings\nEnsure DNS isn't blocking: ") + get->repos[0]->url);
+			RootDisplay::switchSubscreen(new ErrorScreen(std::string("Perform a connection test in the " PLATFORM " System Settings\nEnsure DNS isn't blocking: ") + get->repos[0]->url));
 			return true;
 		}
 
 		if (!atLeastOneEnabled)
 		{
-			ErrorScreen("No enabled repos found, check ./get/repos.json\nMake sure repo has at least one package");
+			RootDisplay::switchSubscreen(new ErrorScreen("No enabled repos found, check ./get/repos.json\nMake sure repo has at least one package"));
 			return true;
 		}
 
