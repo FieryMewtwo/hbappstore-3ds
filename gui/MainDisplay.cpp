@@ -96,6 +96,8 @@ bool MainDisplay::process(InputEvents* event)
 
 int MainDisplay::updateLoader(void* clientp, double dltotal, double dlnow, double ultotal, double ulnow)
 {
+	//TODO: there's *got* to be a better way to do this than directly accessing GetTicks()
+
 	int now = SDL_GetTicks();
 	int diff = now - AppDetails::lastFrameTime;
 
