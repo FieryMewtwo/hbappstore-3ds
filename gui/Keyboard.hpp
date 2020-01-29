@@ -1,7 +1,7 @@
 #include "../libs/chesto/src/Element.hpp"
 #include "../libs/chesto/src/TextElement.hpp"
 
-//#include <SDL2/SDL_image.h>
+//#include <SDL2/SDL_image.h> //TODO: commented out, is this superfluous?
 #pragma once
 
 // bad idea, TODO: Input-able interface for elements that can be typed-in
