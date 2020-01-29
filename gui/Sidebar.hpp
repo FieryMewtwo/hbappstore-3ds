@@ -1,6 +1,7 @@
 #include "../libs/chesto/src/ImageElement.hpp"
 #include "../libs/chesto/src/ListElement.hpp"
 #include "../libs/chesto/src/TextElement.hpp"
+#include "../libs/chesto/src/DrawUtils.hpp"
 
 class AppList;
 

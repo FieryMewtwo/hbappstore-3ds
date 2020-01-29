@@ -1,5 +1,5 @@
 #include <sstream>
-#include <SDL2/SDL2_gfxPrimitives.h>
+#include "../libs/chesto/src/DrawUtils.hpp"
 
 #include "../libs/get/src/Get.hpp"
 #include "../libs/get/src/Utils.hpp"
@@ -15,8 +15,8 @@
 #define AVATAR_URL "https://avatars.githubusercontent.com/u/"
 
 
-SDL_Color AboutScreen::black = { 0x00, 0x00, 0x00, 0xff };
-SDL_Color AboutScreen::gray = { 0x50, 0x50, 0x50, 0xff };
+CST_Color AboutScreen::black = { 0x00, 0x00, 0x00, 0xff };
+CST_Color AboutScreen::gray = { 0x50, 0x50, 0x50, 0xff };
 
 AboutScreen::AboutScreen(Get* get)
 	: get(get)
@@ -210,10 +210,10 @@ void AboutScreen::render(Element* parent)
 		this->parent = parent;
 
 	// draw a white background, 1280 wide
-	SDL_Rect dimens = { 0, 0, 1280, 720 };
+	CST_Rect dimens = { 0, 0, 1280, 720 };
 
-	SDL_SetRenderDrawColor(parent->renderer, 0xFF, 0xFF, 0xFF, 0xFF);
-	SDL_RenderFillRect(parent->renderer, &dimens);
+	CST_SetDrawColorRGBA(parent->renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+	CST_FillRect(parent->renderer, &dimens);
 	this->renderer = parent->renderer;
 
 	super::render(this);

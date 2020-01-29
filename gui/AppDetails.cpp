@@ -388,12 +388,12 @@ void AppDetails::render(Element* parent)
 		this->parent = parent;
 
 	// draw white background
-	SDL_Rect dimens = { 0, 0, 920, 720 };
+	CST_Rect dimens = { 0, 0, 920, 720 };
 
-	SDL_SetRenderDrawColor(parent->renderer, 0xFF, 0xFF, 0xFF, 0xFF);
-	SDL_RenderFillRect(parent->renderer, &dimens);
+	CST_SetDrawColorRGBA(parent->renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+	CST_FillRect(parent->renderer, &dimens);
 
-	SDL_SetRenderDrawColor(parent->renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+	CST_SetDrawColorRGBA(parent->renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 
 	// draw all elements
 	super::render(this);
