@@ -47,7 +47,7 @@ case "${PLATFORM}" in
 
       # one day replace with pacman: https://github.com/dborth/sdl-wii/issues/54
       sudo apt-get -y install wget git
-      git clone https://gitlab.com/4TU/sdl-wii.git
+      git clone https://github.com/dborth/sdl-wii.git
       export DEVKITPRO=/opt/devkitpro
       export DEVKITPPC=$DEVKITPRO/devkitPPC
       cd sdl-wii && make && make install
