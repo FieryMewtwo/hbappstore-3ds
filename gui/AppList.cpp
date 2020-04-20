@@ -1,6 +1,10 @@
 #include "AppList.hpp"
 #include "AboutScreen.hpp"
-#include "Keyboard.hpp"
+#ifdef SWITCH
+#include "Keyboard.switch.hpp"
+#else
+#include "Keyboard.fallback.hpp"
+#endif
 #include "../main.hpp"
 
 #include "../libs/get/src/Utils.hpp"

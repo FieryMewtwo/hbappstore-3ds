@@ -9,7 +9,11 @@
 
 #include "AppCard.hpp"
 #include "AppDetails.hpp"
-#include "Keyboard.hpp"
+#ifdef SWITCH
+#include "Keyboard.switch.hpp"
+#else
+#include "Keyboard.fallback.hpp"
+#endif
 #include "Sidebar.hpp"
 
 #include <random>

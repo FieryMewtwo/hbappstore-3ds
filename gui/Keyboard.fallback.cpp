@@ -1,4 +1,5 @@
-#include "Keyboard.hpp"
+#ifndef SWITCH
+#include "Keyboard.fallback.hpp"
 #include "AppList.hpp"
 #include "Feedback.hpp"
 
@@ -311,3 +312,4 @@ Keyboard::~Keyboard()
 		delete i;
 	super::removeAll();
 }
+#endif

@@ -2,7 +2,11 @@
 #define FEEDBACKSCREEN_H_
 
 #include "../libs/get/src/Get.hpp"
-#include "Keyboard.hpp"
+#ifdef SWITCH
+#include "Keyboard.switch.hpp"
+#else
+#include "Keyboard.fallback.hpp"
+#endif
 
 #include "../libs/chesto/src/Button.hpp"
 #include "../libs/chesto/src/ImageElement.hpp"
