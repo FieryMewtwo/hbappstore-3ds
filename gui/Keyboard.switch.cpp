@@ -18,28 +18,14 @@ Keyboard::Keyboard(AppList* appList)
 		noApp = true;
 	}
 }
-#include <iostream>
-#include <sstream>
-void _errOnFail(Result res, int line) {
-	if (R_FAILED(res)){
-	ErrorApplicationConfig con;
-	std::stringstream msg;
-	msg << "Error on line: " << line << "; 0x" << std::hex << res;
-	errorApplicationCreate(&con, msg.str().c_str(), NULL);
-	errorApplicationShow(&con);
-	exit(0);
-	}
-}
-
-#define errOnFail(result) _errOnFail(result, __LINE__)
 
 void Keyboard::render(Element* parent)
 {
 	if (!hidden && hiddenPrev) {
 		hiddenPrev = false;
-		errOnFail(swkbdInlineCreate(&platformKbd));
+		swkbdInlineCreate(&platformKbd);
 		swkbdInlineSetChangedStringCallback(&platformKbd, texChanged);
-		errOnFail(swkbdInlineLaunchForLibraryApplet(&platformKbd, SwkbdInlineMode_AppletDisplay, 0));
+		swkbdInlineLaunchForLibraryApplet(&platformKbd, SwkbdInlineMode_AppletDisplay, 0);
 		SwkbdAppearArg arg;
 		swkbdInlineMakeAppearArg(&arg, SwkbdType_Normal);
 		swkbdInlineAppearArgSetOkButtonText(&arg, "Done");
@@ -48,13 +34,15 @@ void Keyboard::render(Element* parent)
 		swkbdInlineAppear(&platformKbd, &arg);
 	}else if (hidden && !hiddenPrev) {
 		hiddenPrev = true;
-		errOnFail(swkbdInlineClose(&platformKbd));
+		lastText = "";
+		lastLen = -1;
+		swkbdInlineClose(&platformKbd);
 	}
 
 	if (!hidden) {
 		SwkbdState st;
 		
-		errOnFail(swkbdInlineUpdate(&platformKbd, &st));
+		swkbdInlineUpdate(&platformKbd, &st);
 		if (st == SwkbdState_Submitted) {
 			if(!noApp) {
 				appList->toggleKeyboard();
@@ -91,6 +79,8 @@ void Keyboard::inputChanged()
 Keyboard::~Keyboard()
 {
 	swkbdInlineClose(&platformKbd);
+	lastText = "";
+	lastLen = -1;
 	for (auto &i : this->elements)
 		delete i;
 	super::removeAll();
