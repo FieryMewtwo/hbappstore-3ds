@@ -1,6 +1,8 @@
 *.DS_Store
 *.o
+*.d
 appstore.*
+appstore-sdl1.*
 .gitignore
 repos.json
 settings.json
