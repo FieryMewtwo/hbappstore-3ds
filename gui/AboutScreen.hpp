@@ -53,11 +53,7 @@ public:
 				const char* directAvatarUrl = NULL);
 
   int creditCount = 0;
-	#ifdef WII //HACK! This should be done dynamically based on aspect ratio
-	const int creditsPerLine = 2;
-	#else
-	const int creditsPerLine = 4;
-	#endif
+	int creditsPerLine() {return (aspectMode() == WIDE) ? 4 : 2;}
 
 private:
 	static CST_Color black, gray;
