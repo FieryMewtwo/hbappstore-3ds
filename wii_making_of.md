@@ -21,3 +21,6 @@ Big parts:
   - After trawling gbatemp, I found this (https://www.youtube.com/watch?v=6IPMo7tGUGc) YT video, where conanac mentioned grabbing libcurl from "WiiBrowser"
   - Google led me to a WiiBrew page (https://wiibrew.org/wiki/WiiBrowser) and a website (http://wiibrowser.altervista.org/mainsite/about.html), both with source. Apparently, this was a browser developed by gave92
   - Googling that revealed that gave92 is Marco Gavelli (https://www.linkedin.com/in/marco-gavelli/), an engineer at Maserati of all places
+- CompuCat hacks `curl.h` a bit to compile against the mystery `libcurl.a` blob, but alas! errors! (undefined reference to __ctype_ptr__)
+  - Turns out, that blob was compiled with GCC 4.6.2; ABI differences caused the issue.
+- vgmoose stubs out curl for UI dev in the meantime
