@@ -44,6 +44,8 @@ int main(int argc, char* argv[])
   mkdir(HBAS_PATH, 0700);
 	chdir(HBAS_PATH);
 
+	// TODO: verify that this is no longer needed, then remove for next release. Or not.
+	// Either way, abstract as wiiu-specific
 	// "migrate" old elf users over to rpx (should've been done last version)
 	struct stat sbuff;
 	if (stat(ELF_PATH, &sbuff) == 0)
