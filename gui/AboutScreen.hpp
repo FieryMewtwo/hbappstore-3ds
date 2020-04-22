@@ -7,6 +7,8 @@
 #include "../libs/chesto/src/ListElement.hpp"
 #include "../libs/chesto/src/TextElement.hpp"
 
+#include <string> //for appending debugvals into a string
+
 struct CreditHead
 {
 	TextElement* text;
@@ -51,6 +53,11 @@ public:
 				const char* directAvatarUrl = NULL);
 
   int creditCount = 0;
+	#ifdef WII //HACK! This should be done dynamically based on aspect ratio
+	const int creditsPerLine = 2;
+	#else
+	const int creditsPerLine = 4;
+	#endif
 
 private:
 	static CST_Color black, gray;

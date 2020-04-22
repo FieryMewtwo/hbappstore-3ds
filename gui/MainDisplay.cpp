@@ -69,6 +69,7 @@ bool MainDisplay::process(InputEvents* event)
 
 		if (error)
 		{
+			//TODO: revise text for non-Ninty consoles
 			RootDisplay::switchSubscreen(new ErrorScreen(std::string("Perform a connection test in the " PLATFORM " System Settings\nEnsure DNS isn't blocking: ") + get->repos[0]->url));
 			return true;
 		}
@@ -124,7 +125,7 @@ int MainDisplay::updateLoader(void* clientp, double dltotal, double dlnow, doubl
 }
 
 
-ErrorScreen::ErrorScreen(std::string troubleshootingText)
+ErrorScreen::ErrorScreen(std::string troubleshootingText) //TODO: layout once networking can actually fail on Wii
 	: icon(RAMFS "res/icon.png")
 	, title("Homebrew App Store", 50 - 25)
 	, errorMessage("Couldn't connect to the Internet!", 40)

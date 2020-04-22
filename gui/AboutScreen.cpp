@@ -19,20 +19,24 @@ CST_Color AboutScreen::gray = { 0x50, 0x50, 0x50, 0xff };
 
 AboutScreen::AboutScreen(Get* get)
 	: get(get)
-	, cancel("Go Back", B_BUTTON, false, 29)
-	, feedback("Leave Feedback", A_BUTTON, false, 17)
-	, title("Homebrew App Store", 35, &black)
-	, subtitle("by fortheusers.org", 25, &black)
+	, cancel("Go Back", B_BUTTON, false, (29*SCREEN_WIDTH/1280))
+	, feedback("Leave Feedback", A_BUTTON, false, 17) //TODO: implement constant-height buttons in chesto
+	, title("Homebrew App Store", (35*SCREEN_WIDTH/1280), &black)
+	, subtitle("by fortheusers.org", (25*SCREEN_WIDTH/1280), &black)
 	, ftuLogo(AVATAR_URL "40721862", []{
 	        return new ImageElement(RAMFS "res/4TU.png");
         })
 	, creds("Licensed under the GPLv3 license. This app is free and open source because the users (like you!) deserve it.\n\nLet's support homebrew and the right to control what software we run on our own devices!",
-			20, &black, false, 1240)
+			(20*SCREEN_HEIGHT/720), &black, false, (SCREEN_WIDTH-40))
 {
 
 	// TODO: show current app status somewhere
 
 	// download/update/remove button (2)
+
+	//TextElement* debugvals = new TextElement(("WH"+std::to_string(SCREEN_WIDTH)+","+std::to_string(SCREEN_HEIGHT)).c_str(), 20);
+	//debugvals->position(20,20);
+	//super::append(debugvals);
 
 	cancel.position(30, 30);
 	cancel.action = std::bind(&AboutScreen::back, this);
@@ -40,28 +44,31 @@ AboutScreen::AboutScreen(Get* get)
 
 	int MARGIN = 550;
 
-	feedback.position(MARGIN + 500, 30);
+	feedback.position(SCREEN_WIDTH - feedback.width - 30, 30);
 	feedback.action = std::bind(&AboutScreen::launchFeedback, this);
 	super::append(&feedback);
 
-	title.position(MARGIN, 40);
+	//ftuLogo.position(375, 15);
+	ftuLogo.resize(SCREEN_HEIGHT/5, SCREEN_HEIGHT/5);
+	int logoframe_width = ftuLogo.width + 35 + title.width;
+	ftuLogo.position(SCREEN_WIDTH/2 - logoframe_width/2, 15);
+	int logooffset = (ftuLogo.height * 25)/140; //approx. height of whitespace above/below 4TU lettering
+	title.position(SCREEN_WIDTH/2 - logoframe_width/2 + ftuLogo.width + 35, ftuLogo.y + logooffset);
+	subtitle.position(SCREEN_WIDTH/2 - logoframe_width/2 + ftuLogo.width + 35, (ftuLogo.y+ftuLogo.height) - (logooffset+subtitle.height));
+
 	super::append(&title);
-
-	subtitle.position(MARGIN, 80);
 	super::append(&subtitle);
-
-	ftuLogo.position(375, 15);
-	ftuLogo.resize(140, 140);
 	super::append(&ftuLogo);
 
-	creds.position(100, 170);
+	creds.position(SCREEN_HEIGHT/7, ftuLogo.y+ftuLogo.height+15); //approx 100px on 720p
 	super::append(&creds);
 
 	// argument order:
 	// username, githubId, twitter, github, gitlab, patreon, url, discord, directAvatarURL
 	// only first two social points will be used
 
-	credHead("Repo Maintainance and Development", "These are the primary people responsible for actively maintaining and developing the Homebrew App Store. If there's a problem, these are the ones to get in touch with!");
+	credHead((std::to_string(feedback.width)+"WH"+std::to_string(SCREEN_WIDTH)+","+std::to_string(SCREEN_HEIGHT)).c_str(), "These are the primary people responsible for actively maintaining and developing the Homebrew App Store. If there's a problem, these are the ones to get in touch with!");
+	//credHead("Repo Maintainance and Development", "These are the primary people responsible for actively maintaining and developing the Homebrew App Store. If there's a problem, these are the ones to get in touch with!");
 	credit("pwsincd", "20027105", NULL, "pwsincd", NULL, NULL, NULL, "pwsincd#9044");
 	credit("VGMoose", "2467473", "vgmoose", "vgmoose");
 	credit("rw-r-r_0644", "18355947", "rw_r_r_0644", "rw-r-r-0644");
@@ -135,11 +142,11 @@ void AboutScreen::credHead(const char* header, const char* blurb)
 	auto head = creditHeads.emplace(creditHeads.end());
 
 	creditCount += (4 - creditCount%4) % 4;
-	head->text = new TextElement(header, 30, &black);
+	head->text = new TextElement(header, (30*SCREEN_HEIGHT)/720, &black);
 	head->text->position(40, 250 + 60 + creditCount / 4 * 160);
 	super::append(head->text);
 
-	head->desc = new TextElement(blurb, 23, &gray, false, 1200);
+	head->desc = new TextElement(blurb, (23*SCREEN_HEIGHT)/720, &gray, false, (SCREEN_WIDTH*15)/16);
 	head->desc->position(40, 250 + 105 + creditCount / 4 * 160);
 	super::append(head->desc);
 
@@ -156,11 +163,11 @@ void AboutScreen::credit(const char* username,
 												const char* discord,
 												const char* directAvatarUrl)
 {
-	int X = 40;
+	int X = 40; //credits XY master offset
 	int Y = 310;
 
-	int myX = creditCount % 4 * 300 + X;
-	int myY = creditCount / 4 * 160 + Y;
+	int myX = creditCount % creditsPerLine * 300 + X;
+	int myY = creditCount / creditsPerLine * 160 + Y;
 
 	auto cred = credits.emplace(credits.end());
 
@@ -171,11 +178,11 @@ void AboutScreen::credit(const char* username,
     cred->userLogo = new ImageElement((std::string(RAMFS "res/pfp_cache/") + githubId).c_str());
   #endif
   cred->userLogo->position(myX, myY);
-	cred->userLogo->resize(100, 100);
+	cred->userLogo->resize(SCREEN_HEIGHT/7, SCREEN_HEIGHT/7); //approx 100px on 720p
 	super::append(cred->userLogo);
 
-	cred->name = new TextElement(username, 27, &black);
-	cred->name->position(myX + 110, myY);
+	cred->name = new TextElement(username, (SCREEN_HEIGHT/20)*0.75, &black); //approx 36 px on 720p
+	cred->name->position(myX + cred->userLogo->width + 10, myY); //10 pixel margin between pfp and text
 	super::append(cred->name);
 
 	int socialCount = 0;
@@ -183,21 +190,19 @@ void AboutScreen::credit(const char* username,
 	const char * handles[6] = { twitter, github, gitlab, patreon, url, discord };
 	const char * icons[6] = { "twitter", "github", "gitlab", "patreon", "url", "discord" };
 
-	for (int x=0; x<6; x++) {
+	for (int x=0; (x<6) && (socialCount<2); x++) {
 		if (handles[x] == NULL) continue;
 
 		cred->social[socialCount].icon = new ImageElement(((std::string(RAMFS "res/") + icons[x]) + ".png").c_str());
-		cred->social[socialCount].icon->resize(20, 20);
-		cred->social[socialCount].icon->position(myX + 110, myY + 45 + socialCount*25);
+		cred->social[socialCount].icon->resize(cred->userLogo->width/5, cred->userLogo->width/5); //approx 20px 720p
+		cred->social[socialCount].icon->position(myX + cred->userLogo->width + 10, myY + cred->userLogo->height/2 + socialCount*(cred->social[socialCount].icon->height*1.125));
 		super::append(cred->social[socialCount].icon);
 
-		cred->social[socialCount].link = new TextElement(handles[x], 14, &gray);
-		cred->social[socialCount].link->position(myX + 140, myY + 45 + socialCount*25);
+		cred->social[socialCount].link = new TextElement(handles[x], cred->social[socialCount].icon->width*0.75, &gray); //0.75 px -> pt conversion, bleugh. TODO: add px text support to chesto
+		cred->social[socialCount].link->position(myX + cred->userLogo->width + cred->social[socialCount].icon->width + 20, myY + cred->userLogo->height/2 + socialCount*(cred->social[socialCount].icon->height*1.125));
 		super::append(cred->social[socialCount].link);
 
 		socialCount++;
-
-		if (socialCount >= 2) break;
 	}
 
 	creditCount++;
@@ -208,8 +213,8 @@ void AboutScreen::render(Element* parent)
 	if (this->parent == NULL)
 		this->parent = parent;
 
-	// draw a white background, 1280 wide
-	CST_Rect dimens = { 0, 0, 1280, 720 };
+	// draw a white background
+	CST_Rect dimens = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
 
 	CST_Color white = { 0xff, 0xff, 0xff, 0xff };
 	CST_SetDrawColor(parent->renderer, white);
