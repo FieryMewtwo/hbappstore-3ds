@@ -21,12 +21,12 @@ AboutScreen::AboutScreen(Get* get)
 	: get(get)
 	, cancel("Go Back", B_BUTTON, false, (29*SCREEN_WIDTH/1280))
 	, feedback("Leave Feedback", A_BUTTON, false, 17) //TODO: implement constant-height buttons in chesto
-	, title("Homebrew App Store", (35*SCREEN_WIDTH/1280), &black)
-	, subtitle("by fortheusers.org", (25*SCREEN_WIDTH/1280), &black)
+	, title("Homebrew App Store", (35*SCREEN_HEIGHT/720), &black)
+	, subtitle("by fortheusers.org", (25*SCREEN_HEIGHT/720), &black)
 	, ftuLogo(AVATAR_URL "40721862", []{
 	        return new ImageElement(RAMFS "res/4TU.png");
         })
-	, creds("Licensed under the GPLv3 license. This app is free and open source because the users (like you!) deserve it.\n\nLet's support homebrew and the right to control what software we run on our own devices!",
+	, creds("Licensed under the GPLv3 license. This app is free and open source because the users (like you!) deserve it.\nLet's support homebrew and the right to control what software we run on our own devices!",
 			(20*SCREEN_HEIGHT/720), &black, false, (SCREEN_WIDTH-40))
 {
 
@@ -42,33 +42,39 @@ AboutScreen::AboutScreen(Get* get)
 	cancel.action = std::bind(&AboutScreen::back, this);
 	super::append(&cancel);
 
-	int MARGIN = 550;
-
 	feedback.position(SCREEN_WIDTH - feedback.width - 30, 30);
 	feedback.action = std::bind(&AboutScreen::launchFeedback, this);
 	super::append(&feedback);
 
-	//ftuLogo.position(375, 15);
-	ftuLogo.resize(SCREEN_HEIGHT/5, SCREEN_HEIGHT/5);
-	int logoframe_width = ftuLogo.width + 35 + title.width;
-	ftuLogo.position(SCREEN_WIDTH/2 - logoframe_width/2, 15);
-	int logooffset = (ftuLogo.height * 25)/140; //approx. height of whitespace above/below 4TU lettering
-	title.position(SCREEN_WIDTH/2 - logoframe_width/2 + ftuLogo.width + 35, ftuLogo.y + logooffset);
-	subtitle.position(SCREEN_WIDTH/2 - logoframe_width/2 + ftuLogo.width + 35, (ftuLogo.y+ftuLogo.height) - (logooffset+subtitle.height));
+	if(aspectMode() == WIDE) //left-justify logo with text beside it
+	{
+		ftuLogo.resize(SCREEN_HEIGHT/5, SCREEN_HEIGHT/5);
+		int logoframe_width = ftuLogo.width + 35 + title.width;
+		ftuLogo.position(SCREEN_WIDTH/2 - logoframe_width/2, 15);
+		int logooffset = (ftuLogo.height * 25)/140; //approx. height of whitespace above/below 4TU lettering
+		title.position(SCREEN_WIDTH/2 - logoframe_width/2 + ftuLogo.width + 35, ftuLogo.y + logooffset);
+		subtitle.position(SCREEN_WIDTH/2 - logoframe_width/2 + ftuLogo.width + 35, (ftuLogo.y+ftuLogo.height) - (logooffset+subtitle.height));
+	}
+	else //center logo with text under it
+	{
+		ftuLogo.resize(SCREEN_HEIGHT/5, SCREEN_HEIGHT/5);
+		ftuLogo.position(SCREEN_WIDTH/2 - ftuLogo.width/2, 15);
+		title.position(SCREEN_WIDTH/2 - title.width/2, ftuLogo.y + ftuLogo.height*0.75); //hack: there's whitespace in the 4TU logo, set the text inside it
+		subtitle.position(SCREEN_WIDTH/2 - subtitle.width/2, title.y + title.height + 5);
+	}
 
+	super::append(&ftuLogo);
 	super::append(&title);
 	super::append(&subtitle);
-	super::append(&ftuLogo);
 
-	creds.position(SCREEN_HEIGHT/7, ftuLogo.y+ftuLogo.height+15); //approx 100px on 720p
+	creds.position(SCREEN_HEIGHT/7, std::max(ftuLogo.y+ftuLogo.height, subtitle.y+subtitle.height)+5); //approx 100px on 720p
 	super::append(&creds);
 
 	// argument order:
 	// username, githubId, twitter, github, gitlab, patreon, url, discord, directAvatarURL
 	// only first two social points will be used
 
-	credHead((std::to_string(feedback.width)+"WH"+std::to_string(SCREEN_WIDTH)+","+std::to_string(SCREEN_HEIGHT)).c_str(), "These are the primary people responsible for actively maintaining and developing the Homebrew App Store. If there's a problem, these are the ones to get in touch with!");
-	//credHead("Repo Maintainance and Development", "These are the primary people responsible for actively maintaining and developing the Homebrew App Store. If there's a problem, these are the ones to get in touch with!");
+	credHead("Repo Maintainance and Development", "These are the primary people responsible for actively maintaining and developing the Homebrew App Store. If there's a problem, these are the ones to get in touch with!");
 	credit("pwsincd", "20027105", NULL, "pwsincd", NULL, NULL, NULL, "pwsincd#9044");
 	credit("VGMoose", "2467473", "vgmoose", "vgmoose");
 	credit("rw-r-r_0644", "18355947", "rw_r_r_0644", "rw-r-r-0644");
@@ -143,14 +149,14 @@ void AboutScreen::credHead(const char* header, const char* blurb)
 
 	creditCount += (4 - creditCount%4) % 4;
 	head->text = new TextElement(header, (30*SCREEN_HEIGHT)/720, &black);
-	head->text->position(40, 250 + 60 + creditCount / 4 * 160);
+	head->text->position(40, elements.back()->y+elements.back()->height+10);
 	super::append(head->text);
 
 	head->desc = new TextElement(blurb, (23*SCREEN_HEIGHT)/720, &gray, false, (SCREEN_WIDTH*15)/16);
-	head->desc->position(40, 250 + 105 + creditCount / 4 * 160);
+	head->desc->position(40, elements.back()->y+elements.back()->height+10);
 	super::append(head->desc);
 
-	creditCount += 4;
+	creditCount += creditsPerLine();
 }
 
 void AboutScreen::credit(const char* username,
@@ -166,8 +172,8 @@ void AboutScreen::credit(const char* username,
 	int X = 40; //credits XY master offset
 	int Y = 310;
 
-	int myX = creditCount % creditsPerLine * 300 + X;
-	int myY = creditCount / creditsPerLine * 160 + Y;
+	int myX = creditCount % creditsPerLine() * 300 + X;
+	myY = ((creditCount % creditsPerLine()) == 0) ? elements.back()->y + elements.back()->height+10 : myY; //TODO: rename this to something sensible
 
 	auto cred = credits.emplace(credits.end());
 

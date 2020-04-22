@@ -68,6 +68,8 @@ private:
 
 	TextElement creds;
 
+	int myY; //used for credit positioning
+
 	std::list<CreditHead> creditHeads;
 	std::list<Credit> credits;
 };
