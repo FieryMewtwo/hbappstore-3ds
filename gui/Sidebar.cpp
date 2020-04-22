@@ -2,8 +2,8 @@
 
 Sidebar::Sidebar()
 	: logo(RAMFS "res/icon.png")
-	, title("Homebrew App Store", 22)
-	, subtitle("GPLv3 License", 18)
+	, title("Homebrew App Store", (22 * SCREEN_HEIGHT)/720)
+	, subtitle("GPLv3 License", (18 * SCREEN_HEIGHT)/720)
 {
 	// a sidebar consists of:
 	//		a collection of category labels (TextElements),
@@ -18,12 +18,12 @@ Sidebar::Sidebar()
 	for (int x = 0; x < TOTAL_CATS; x++)
 	{
 		category[x].icon = new ImageElement((std::string(RAMFS "res/") + cat_value[x] + ".png").c_str());
-		category[x].icon->resize(40, 40);
+		category[x].icon->resize(SCREEN_HEIGHT/18, SCREEN_HEIGHT/18); //40px on 720p
 		category[x].icon->position(30, 150 + x * 70 - 5);
 		super::append(category[x].icon);
 
-		category[x].name = new TextElement(cat_names[x], 25);
-		category[x].name->position(105, 150 + x * 70);
+		category[x].name = new TextElement(cat_names[x], (25*SCREEN_HEIGHT)/720);
+		category[x].name->position(category[x].icon->x+category[x].icon->width+30, 150 + x * 70);
 		super::append(category[x].name);
 	}
 
@@ -169,7 +169,7 @@ bool Sidebar::process(InputEvents* event)
 
 void Sidebar::render(Element* parent)
 {
-#if defined(_3DS) || defined(_3DS_MOCK)
+#if defined(_3DS) || defined(_3DS_MOCK) //TODO: get rid of this BS and just don't instantiate a Sidebar on 3DS
   // no sidebar on 3ds
   return;
 #endif
@@ -177,7 +177,7 @@ void Sidebar::render(Element* parent)
 	CST_Rect dimens = { 0, 0, 400 - 260 * (appList->R - 3) - 35, 60 }; // TODO: extract this to a method too
 	dimens.y = 150 + this->curCategory * 70 - 15;					   // TODO: extract formula into method
 
-#if defined(__WIIU__)
+#if defined(__WIIU__) //TODO: get all these colordefs to an external header
 	CST_Color consoleColor = { 0x3b, 0x3c, 0x4e, 0xFF };
 #elif defined(_3DS)
 	CST_Color consoleColor = { 0xe4, 0x00, 0x0f, 0xFF };
