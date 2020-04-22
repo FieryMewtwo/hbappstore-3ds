@@ -178,7 +178,7 @@ void AboutScreen::credit(const char* username,
 	auto cred = credits.emplace(credits.end());
 
 	auto avatar = directAvatarUrl ? directAvatarUrl : (std::string(AVATAR_URL) + githubId + "?s=100").c_str();
-  #if !defined(__WIIU__)
+  #if !defined(__WIIU__) and defined(NETWORK)
 	  cred->userLogo = new NetImageElement(directAvatarUrl != NULL ? directAvatarUrl : ((std::string(AVATAR_URL) + githubId + "?s=100").c_str()));
   #else
     cred->userLogo = new ImageElement((std::string(RAMFS "res/pfp_cache/") + githubId).c_str());
