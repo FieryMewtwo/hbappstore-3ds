@@ -115,7 +115,7 @@ bool Sidebar::process(InputEvents* event)
 		// and every category itself should be a CategoryLabel just like an AppCard consists of images + text
 		for (int x = 0; x < TOTAL_CATS; x++)
 		{
-			int xc = 0, yc = 150 + x * 70 - 15, width = 400 - 260 * (appList->R - 3) - 35, height = 60;
+			int xc = 0, yc = 150 + x * 70 - 15, width = 400 - 260 * (appList->itemsPerRow - 3) - 35, height = 60;
 			if (event->touchIn(xc, yc, width, height))
 			{
 				// touch is over an element of the sidebar, set the elasticCounter
@@ -139,7 +139,7 @@ bool Sidebar::process(InputEvents* event)
 		// check if it's one of the text elements
 		for (int x = 0; x < TOTAL_CATS; x++)
 		{
-			int xc = 0, yc = 150 + x * 70 - 15, width = 400 - 260 * (appList->R - 3) - 35, height = 60; // TODO: extract formula into method (same as AppList x value)
+			int xc = 0, yc = 150 + x * 70 - 15, width = 400 - 260 * (appList->itemsPerRow - 3) - 35, height = 60; // TODO: extract formula into method (same as AppList x value)
 			if ((event->touchIn(xc, yc, width, height) && event->isTouchUp()) || (event->held(A_BUTTON) && this->highlighted == x))
 			{
 				// if it's a touch up, let's make sure this is the same one we touched down on
@@ -174,7 +174,7 @@ void Sidebar::render(Element* parent)
   return;
 #endif
 	// draw the light gray bg behind the active category
-	CST_Rect dimens = { 0, 0, 400 - 260 * (appList->R - 3) - 35, 60 }; // TODO: extract this to a method too
+	CST_Rect dimens = { 0, 0, 400 - 260 * (appList->itemsPerRow - 3) - 35, 60 }; // TODO: extract this to a method too
 	dimens.y = 150 + this->curCategory * 70 - 15;					   // TODO: extract formula into method
 
 #if defined(__WIIU__) //TODO: get all these colordefs to an external header

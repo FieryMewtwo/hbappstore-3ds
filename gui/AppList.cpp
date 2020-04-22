@@ -32,7 +32,7 @@ AppList::AppList(Get* get, Sidebar* sidebar)
 	, muteIcon(RAMFS "res/mute.png")
 #endif
 {
-	this->x = 400 - 260 * (R - 3);
+	this->x = 400 - 260 * (itemsPerRow - 3);
 
 	// the offset of how far along scroll'd we are
 	this->y = 0;
@@ -82,8 +82,8 @@ bool AppList::process(InputEvents* event)
 
 	if (event->pressed(ZL_BUTTON) || event->pressed(L_BUTTON))
 	{
-		R = (R == 3) ? 4 : 3;
-		this->x = 400 - 260 * (R - 3);
+		itemsPerRow = (itemsPerRow == 3) ? 4 : 3;
+		this->x = 400 - 260 * (itemsPerRow - 3);
 		update();
 		return true;
 	}
@@ -158,7 +158,7 @@ bool AppList::process(InputEvents* event)
 				this->elements[this->highlighted]->elasticCounter = NO_HIGHLIGHT;
 
 			// if we got a LEFT key while on the left most edge already, transfer to categories
-			if (this->highlighted % R == 0 && event->held(LEFT_BUTTON))
+			if (this->highlighted % itemsPerRow == 0 && event->held(LEFT_BUTTON))
 			{
 				this->highlighted = -1;
 				this->sidebar->highlighted = this->sidebar->curCategory;
@@ -166,13 +166,13 @@ bool AppList::process(InputEvents* event)
 			}
 
 			// similarly, prevent a RIGHT from wrapping to the next line
-			if (this->highlighted % R == (R - 1) && event->held(RIGHT_BUTTON)) return false;
+			if (this->highlighted % itemsPerRow == (itemsPerRow - 1) && event->held(RIGHT_BUTTON)) return false;
 
 			// adjust the cursor by 1 for left or right
 			this->highlighted += -1 * (event->held(LEFT_BUTTON)) + (event->held(RIGHT_BUTTON));
 
-			// adjust it by R for up and down
-			this->highlighted += -1 * R * (event->held(UP_BUTTON)) + R * (event->held(DOWN_BUTTON));
+			// adjust it by itemsPerRow for up and down
+			this->highlighted += -1 * itemsPerRow * (event->held(UP_BUTTON)) + itemsPerRow * (event->held(DOWN_BUTTON));
 
 			// don't let the cursor go out of bounds
 			if (this->highlighted >= (int)this->elements.size()) this->highlighted = this->elements.size() - 1;
@@ -202,7 +202,7 @@ bool AppList::process(InputEvents* event)
 			this->y = -1 * (curTile->y - 3 * (curTile->height - 15)) - 40;
 
 		// if the card is this close to the top, just set it the list offset to 0 to scroll up to the top
-		if (this->highlighted < R)
+		if (this->highlighted < itemsPerRow)
 			this->y = 0;
 
 		if (this->elements[this->highlighted] && this->elements[this->highlighted]->elasticCounter == NO_HIGHLIGHT)
@@ -230,7 +230,7 @@ void AppList::render(Element* parent)
 		this->parent = parent;
 
 	// draw a white background, 870 wide
-	CST_Rect dimens = { 0, 0, 920 + 260 * (R - 3), 720 };
+	CST_Rect dimens = { 0, 0, 920 + 260 * (itemsPerRow - 3), 720 };
 	dimens.x = this->x - 35;
 	CST_Color white = { 0xff, 0xff, 0xff, 0xff };
 
@@ -287,7 +287,7 @@ void AppList::update()
 		return;
 
 #if defined(_3DS) || defined(_3DS_MOCK) //TODO: redefining these in-place is hacky as all hell, this should be init'd properly for 3DS
-  R = 3;  // force 3 app cards at time
+  itemsPerRow = 3;  // force 3 app cards at time
   this->x = 45; // no sidebar
 #endif
 	// remove elements
@@ -338,14 +338,14 @@ void AppList::update()
 		appCards.emplace_back(package, this);
 		AppCard& card = appCards.back();
 		card.index = appCards.size() - 1;
-		card.position(25 + (card.index % R) * (card.width + 9 / SCALER), 145 + (card.height + 15) * (card.index / R));
+		card.position(25 + (card.index % itemsPerRow) * (card.width + 9 / SCALER), 145 + (card.height + 15) * (card.index / itemsPerRow));
 		card.update();
 		super::append(&card);
 	}
 	totalCount = appCards.size();
 
 	// add quit button
-	quitBtn.position(SCREEN_HEIGHT + 260 * (R - 3), 70);
+	quitBtn.position(SCREEN_HEIGHT + 260 * (itemsPerRow - 3), 70);
 
 #if defined(_3DS) || defined(_3DS_MOCK)
   quitBtn.position(SCREEN_WIDTH - quitBtn.width - 5, 20);
@@ -359,7 +359,7 @@ void AppList::update()
 		// add the keyboard
 		keyboardBtn.position(quitBtn.x - 20 - keyboardBtn.width, quitBtn.y);
 		super::append(&keyboardBtn);
-		keyboard.position(372 + (3 - R) * 132, 417);
+		keyboard.position(372 + (3 - itemsPerRow) * 132, 417);
 		super::append(&keyboard);
 
 		// category text

@@ -46,7 +46,7 @@ public:
 	int totalCount = 0;
 
 	// default number of items per row TODO: save this value as config
-	int R = 3;
+	int itemsPerRow = 3;
 
 	int sortMode = RECENT;
   bool useBannerIcons = true;
