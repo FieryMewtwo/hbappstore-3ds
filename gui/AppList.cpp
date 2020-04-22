@@ -24,9 +24,9 @@ AppList::AppList(Get* get, Sidebar* sidebar)
 	, sidebar(sidebar)	// the sidebar, which will store the currently selected category info
 	, keyboard(this)
 	, quitBtn("Quit", SELECT_BUTTON, false, 15)
-	, creditsBtn("Credits", X_BUTTON, false, 15)
-	, sortBtn("Adjust Sort", Y_BUTTON, false, 15)
-	, keyboardBtn("Toggle Keyboard", Y_BUTTON, false, 15)
+	, creditsBtn("Credits", Y_BUTTON, false, 15) //HACK: switched X_BUTTON to Y_BUTTON (= minus on wiimote) for testing
+	, sortBtn("Adjust Sort", X_BUTTON, false, 15) //HACK: this was Y_BUTTON
+	, keyboardBtn("Toggle Keyboard", X_BUTTON, false, 15) //HACK: this was Y_BUTTON
 #if defined(MUSIC)
 	, muteBtn(" ", 0, false, 15, 43)
 	, muteIcon(RAMFS "res/mute.png")
@@ -65,10 +65,8 @@ AppList::AppList(Get* get, Sidebar* sidebar)
 	sortBlurb.setSize(15);
 	sortBlurb.setColor(gray);
 
-#if defined(__WIIU__)
-  useBannerIcons = true;
-#elif defined(SWITCH)
-  // don't use banner icons if we're in applet mode
+#if defined(SWITCH)
+  // disable banner icons if we're in applet mode
   // they use up too much memory, and a lot of people only use applet mode
   AppletType at = appletGetAppletType();
   useBannerIcons = (at == AppletType_Application || at == AppletType_SystemApplication);
@@ -112,7 +110,7 @@ bool AppList::process(InputEvents* event)
 		ret |= keyboard.process(event);
 		if (event->isKeyDown() && event->held(Y_BUTTON))
 			ret |= ListElement::process(event); // continue processing ONLY if they're pressing Y
-		
+
     if (needsUpdate) update();
     return ret;
 	}
@@ -124,7 +122,7 @@ bool AppList::process(InputEvents* event)
 	{
 		if (keyboardIsShowing)
 		{
-			// keyboard is showing, but we'r epressing buttons, and we're down here, so set touch mode and get out
+			// keyboard is showing, but we're pressing buttons, and we're down here, so set touch mode and get out
 			touchMode = false;
 			if (event->held(Y_BUTTON)) // again, only let a Y through to toggle keyboard (TODO: redo this!)
 				ret |= ListElement::process(event);
@@ -288,7 +286,7 @@ void AppList::update()
 	if (!get)
 		return;
 
-#if defined(_3DS) || defined(_3DS_MOCK)
+#if defined(_3DS) || defined(_3DS_MOCK) //TODO: redefining these in-place is hacky as all hell, this should be init'd properly for 3DS
   R = 3;  // force 3 app cards at time
   this->x = 45; // no sidebar
 #endif
