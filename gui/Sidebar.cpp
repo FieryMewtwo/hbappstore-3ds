@@ -18,12 +18,19 @@ Sidebar::Sidebar()
 	// create image in top left
 	logo.resize(SCREEN_HEIGHT/18, SCREEN_HEIGHT/18); //40px 720p
 	logo.position(30, 50); //i'm fine with these magicnum borders -AC
+	#ifndef RELEASE
+	logo.angle = 180;
+	#endif
 	super::append(&logo);
 
 	// create title for logo, top left
 	title.position(logo.x+logo.width+30, logo.y+(logo.height/2)-(title.height+subtitle.height+5)/2);
 	super::append(&title);
 
+	#ifndef RELEASE
+	subtitle.setText("DEV BUILD");
+	subtitle.update();
+	#endif
 	subtitle.position(title.x, title.y+title.height+5);
 	super::append(&subtitle);
 

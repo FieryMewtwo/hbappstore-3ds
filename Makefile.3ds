@@ -19,7 +19,7 @@ RAMFS_DIR   := resin
 
 APP_TITLE	:= HB App Store
 APP_DESCRIPTION := Download and manage homebrew apps
-APP_AUTHOR 	:= 4TU Team
+APP_AUTHOR 	:= ForTheUsers
 APP_VERSION := 2.2
 ICON		:= resin/res/icon_small.png
 
