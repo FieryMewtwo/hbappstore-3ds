@@ -13,31 +13,33 @@ Sidebar::Sidebar()
 
 	// there's no back color to the sidebar, as the background is already the right color
 
+	// LHS of sidebar is the "minimized" version; width = (SCREEN_HEIGHT/18)+60 (30px on either side of icon)
+
+	// create image in top left
+	logo.resize(SCREEN_HEIGHT/18, SCREEN_HEIGHT/18); //40px 720p
+	logo.position(30, 50); //i'm fine with these magicnum borders -AC
+	super::append(&logo);
+
+	// create title for logo, top left
+	title.position(logo.x+logo.width+30, logo.y+(logo.height/2)-(title.height+subtitle.height+5)/2);
+	super::append(&title);
+
+	subtitle.position(title.x, title.y+title.height+5);
+	super::append(&subtitle);
+
 	// for every entry in cat names, create a text element
 	// elements 0 through TOTAL_CATS are the sidebar texts (for highlighting)
 	for (int x = 0; x < TOTAL_CATS; x++)
 	{
 		category[x].icon = new ImageElement((std::string(RAMFS "res/") + cat_value[x] + ".png").c_str());
 		category[x].icon->resize(SCREEN_HEIGHT/18, SCREEN_HEIGHT/18); //40px on 720p
-		category[x].icon->position(30, 150 + x * 70 - 5);
+		category[x].icon->position(30, (logo.y+0) + (x * 70) - 5); //TODO: +0 was +logo..wtf was that?
 		super::append(category[x].icon);
 
 		category[x].name = new TextElement(cat_names[x], (25*SCREEN_HEIGHT)/720);
-		category[x].name->position(category[x].icon->x+category[x].icon->width+30, 150 + x * 70);
+		category[x].name->position(category[x].icon->x+category[x].icon->width+30, category[x].icon->y+(category[x].icon->height - category[x].name->height)/2);
 		super::append(category[x].name);
 	}
-
-	// create image in top left
-	logo.resize(40, 40);
-	logo.position(30, 50);
-	super::append(&logo);
-
-	// create title for logo, top left
-	title.position(105, 45);
-	super::append(&title);
-
-	subtitle.position(105, 75);
-	super::append(&subtitle);
 
 	// elasticCounter in this class is used to keep track of which element is being pressed down on in touch mode
 	// TODO: elasticCounter belongs to element and should really be renamed (it's for general purpose animations)
@@ -62,7 +64,7 @@ void Sidebar::addHints()
 {
 	// small indicator to switch to advanced view using L
 	hider = new ImageElement(RAMFS "res/button-l-outline.png");
-	hider->resize(20, 20);
+	hider->resize(20, 20);  //TODO: magic placement and size
 	hider->position(270, 685);
 	super::append(hider);
 
@@ -73,7 +75,7 @@ void Sidebar::addHints()
 	showCurrentCategory = true;
 }
 
-bool Sidebar::process(InputEvents* event)
+bool Sidebar::process(InputEvents* event) //TODO refactor all teh things
 {
 	bool ret = false;
 	int origHighlighted = highlighted;
@@ -103,6 +105,7 @@ bool Sidebar::process(InputEvents* event)
 		if (this->highlighted >= TOTAL_CATS) this->highlighted = TOTAL_CATS - 1;
 	}
 
+///////////BEGIN OLD TOUCH CODE, NEEDS TO BE REWORKED
 #if !defined(_3DS) && !defined(_3DS_MOCK)
 	// saw click down, set dragging state
 	if (event->isTouchDown())
@@ -127,6 +130,7 @@ bool Sidebar::process(InputEvents* event)
 		return true;
 	}
 #endif
+/////////////END TOUCH CODE
 
 	// detect if a click is on one of the sidebar elements
 	// (or we saw the A button be pressed)

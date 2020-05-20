@@ -53,7 +53,7 @@ public:
 				const char* directAvatarUrl = NULL);
 
   int creditCount = 0;
-	int creditsPerLine() {return (aspectMode() == WIDE) ? 4 : 2;}
+	inline int creditsPerLine() {return (aspectMode() == WIDE) ? 4 : 2;}
 
 private:
 	static CST_Color black, gray;
