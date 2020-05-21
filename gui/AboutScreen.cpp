@@ -145,15 +145,16 @@ AboutScreen::~AboutScreen()
 
 void AboutScreen::credHead(const char* header, const char* blurb)
 {
+	if(lastAvi == NULL) lastAvi = elements.back(); //lastAvi is being used as a cheaty way to get the y-position/height of lowest item drawn
 	auto head = creditHeads.emplace(creditHeads.end());
 
 	creditCount += (4 - creditCount%4) % 4;
 	head->text = new TextElement(header, (30*SCREEN_HEIGHT)/720, &black);
-	head->text->position(40, elements.back()->y+elements.back()->height+10);
+	head->text->position(40, lastAvi->y+lastAvi->height+10);
 	super::append(head->text);
 
 	head->desc = new TextElement(blurb, (23*SCREEN_HEIGHT)/720, &gray, false, (SCREEN_WIDTH*15)/16);
-	head->desc->position(40, elements.back()->y+elements.back()->height+10);
+	head->desc->position(40, head->text->y+head->text->height+10);
 	super::append(head->desc);
 
 	creditCount += creditsPerLine();
@@ -174,6 +175,7 @@ void AboutScreen::credit(const char* username,
 
 	int myX = creditCount % creditsPerLine() * 300 + X;
 	myY = ((creditCount % creditsPerLine()) == 0) ? elements.back()->y + elements.back()->height+10 : myY; //TODO: rename this to something sensible
+	//TODO: This causes issues if last credit on a line has only one social. Will fix as part of converting social cards to their own Element classes.
 
 	auto cred = credits.emplace(credits.end());
 
@@ -185,6 +187,7 @@ void AboutScreen::credit(const char* username,
   #endif
   cred->userLogo->position(myX, myY);
 	cred->userLogo->resize(SCREEN_HEIGHT/7, SCREEN_HEIGHT/7); //approx 100px on 720p
+	lastAvi = cred->userLogo;
 	super::append(cred->userLogo);
 
 	cred->name = new TextElement(username, (SCREEN_HEIGHT/20)*0.75, &black); //approx 36 px on 720p

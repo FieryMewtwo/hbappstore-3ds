@@ -40,7 +40,7 @@ Sidebar::Sidebar()
 	{
 		category[x].icon = new ImageElement((std::string(RAMFS "res/") + cat_value[x] + ".png").c_str());
 		category[x].icon->resize(SCREEN_HEIGHT/18, SCREEN_HEIGHT/18); //40px on 720p
-		category[x].icon->position(30, (logo.y+0) + (x * 70) - 5); //TODO: +0 was +logo..wtf was that?
+		category[x].icon->position(30, (logo.y+logo.height) + (x * 70) - 5); 
 		super::append(category[x].icon);
 
 		category[x].name = new TextElement(cat_names[x], (25*SCREEN_HEIGHT)/720);

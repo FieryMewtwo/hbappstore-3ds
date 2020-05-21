@@ -53,7 +53,7 @@ public:
 				const char* directAvatarUrl = NULL);
 
   int creditCount = 0;
-	inline int creditsPerLine() {return (aspectMode() == WIDE) ? 4 : 2;}
+	inline int creditsPerLine() {return (aspectMode() == WIDE) ? 4 : 2;} //TODO: consider replacing with proper fits-per-line calc
 
 private:
 	static CST_Color black, gray;
@@ -69,6 +69,7 @@ private:
 	TextElement creds;
 
 	int myY; //used for credit positioning
+	Element* lastAvi = NULL; //tracks last avi drawn, used for y-positioning
 
 	std::list<CreditHead> creditHeads;
 	std::list<Credit> credits;
