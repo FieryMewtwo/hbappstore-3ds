@@ -11,7 +11,7 @@
 #include "../libs/get/src/Utils.hpp"
 
 #include "MainDisplay.hpp"
-#include "../main.hpp"
+#include "main.hpp"
 
 MainDisplay::MainDisplay()
 	: appList(NULL, &sidebar)
@@ -35,6 +35,8 @@ void MainDisplay::render(Element* parent)
 {
 	if (showingSplash)
 		renderedSplash = true;
+
+	renderBackground(true);
 	RootDisplay::render(parent);
 }
 

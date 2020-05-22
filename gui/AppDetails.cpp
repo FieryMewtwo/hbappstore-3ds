@@ -14,7 +14,7 @@
 #include "Feedback.hpp"
 #include "AppList.hpp"
 #include "ImageCache.hpp"
-#include "../main.hpp"
+#include "main.hpp"
 
 int AppDetails::lastFrameTime = 99;
 
@@ -362,7 +362,7 @@ void AppDetails::render(Element* parent)
 	// draw white background
 	CST_Rect dimens = { 0, 0, 920, PANE_WIDTH };
 
-	CST_Color  white = { 0xff, 0xff, 0xff, 0xff };
+	CST_Color white = { 0xff, 0xff, 0xff, 0xff };
 
 	CST_SetDrawColor(parent->renderer, white);
 	CST_FillRect(parent->renderer, &dimens);
@@ -370,7 +370,7 @@ void AppDetails::render(Element* parent)
 	CST_SetDrawColor(parent->renderer, white);
 
 	// draw all elements
-	super::render(this);
+	super::render(parent);
 }
 
 int AppDetails::updatePopupStatus(int status, int num, int num_total)
@@ -495,7 +495,7 @@ void AppDetailsContent::render(Element* parent)
 
 	this->renderer = parent->renderer;
 
-	super::render(this);
+	ListElement::render(parent);
 }
 
 bool AppDetailsContent::process(InputEvents* event)
