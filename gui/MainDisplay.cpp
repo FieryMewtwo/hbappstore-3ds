@@ -127,19 +127,19 @@ int MainDisplay::updateLoader(void* clientp, double dltotal, double dlnow, doubl
 }
 
 
-ErrorScreen::ErrorScreen(std::string troubleshootingText) //TODO: layout once networking can actually fail on Wii
+ErrorScreen::ErrorScreen(std::string troubleshootingText) //TODO: add 4:3 layout, reduce the magicnums
 	: icon(RAMFS "res/icon.png")
-	, title("Homebrew App Store", 50 - 25)
-	, errorMessage("Couldn't connect to the Internet!", 40)
-	, troubleshooting((std::string("Troubleshooting:\n") + troubleshootingText).c_str(), 20, NULL, false, 600)
+	, title("Homebrew App Store", 25*SCREEN_HEIGHT/720)
+	, errorMessage("Couldn't connect to the Internet!", 40*SCREEN_HEIGHT/720)
+	, troubleshooting((std::string("Troubleshooting:\n") + troubleshootingText).c_str(), 20*SCREEN_HEIGHT/720, NULL, false, 600*SCREEN_HEIGHT/720)
 	, btnQuit("Quit", SELECT_BUTTON, false, 15)
 {
-	icon.position(470, 25);
-	icon.resize(35, 35);
-	title.position(515, 25);
-	errorMessage.position(345, 305);
-	troubleshooting.position(380, 585);
-	btnQuit.position(1130, 630);
+	icon.position(470*SCREEN_HEIGHT/720, 25*SCREEN_HEIGHT/720);
+	icon.resize(35*SCREEN_HEIGHT/720, 35*SCREEN_HEIGHT/720);
+	title.position(515*SCREEN_HEIGHT/720, 25*SCREEN_HEIGHT/720);
+	errorMessage.position(345*SCREEN_HEIGHT/720, 305*SCREEN_HEIGHT/720);
+	troubleshooting.position(380*SCREEN_HEIGHT/720, 585*SCREEN_HEIGHT/720);
+	btnQuit.position(1130*SCREEN_HEIGHT/720, 630*SCREEN_HEIGHT/720);
 
 	btnQuit.action = quit;
 
