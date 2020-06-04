@@ -48,8 +48,8 @@ bool MainDisplay::process(InputEvents* event)
 
 		// initial loading spinner
 		spinner = new ImageElement(RAMFS "res/spinner.png");
-		spinner->position(795, 90);
-		spinner->resize(90, 90);
+		spinner->position(795*SCREEN_HEIGHT/720, 90*SCREEN_HEIGHT/720);
+		spinner->resize(90*SCREEN_HEIGHT/720, 90*SCREEN_HEIGHT/720);
 		super::append(spinner);
 
 #if defined(_3DS) || defined(_3DS_MOCK)
