@@ -6,3 +6,4 @@ appstore-sdl1.*
 .gitignore
 repos.json
 settings.json
+.get/
