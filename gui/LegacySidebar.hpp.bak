@@ -1,21 +1,11 @@
 #include "../libs/chesto/src/ImageElement.hpp"
 #include "../libs/chesto/src/ListElement.hpp"
 #include "../libs/chesto/src/TextElement.hpp"
-#include "../libs/chesto/src/Container.hpp"
 
 class AppList;
 
 #define TOTAL_CATS 8
 #pragma once
-
-class SidebarItem : public Element ///An Element representing a sidebar listing.
-{
-public:
-	SidebarItem(int w, int h, const char *imgpath, const char *text, CST_Color *textcolor=0);
-	~SidebarItem();
-	ImageElement icon;
-	TextElement name;
-};
 
 class Sidebar : public ListElement
 {
@@ -42,7 +32,7 @@ public:
 
 	// list of human-readable category titles and short names from the json
 
-#if defined(__WIIU__) //TODO, PLATFORMSPECIFIC: move these into an external platform definition
+#if defined(__WIIU__)
 	const char* cat_names[TOTAL_CATS] = { "Search", "All Apps", "Games", "Emulators", "Tools", "Advanced", "Concepts", "Misc" };
 	const char* cat_value[TOTAL_CATS] = { "_search", "_all", "game", "emu", "tool", "advanced", "concept", "_misc" };
 #else
@@ -51,8 +41,11 @@ public:
 #endif
 
 private:
-	Container* categoryHolder;
-	SidebarItem* category[TOTAL_CATS];
+	struct
+	{
+		ImageElement* icon;
+		TextElement* name;
+	} category[TOTAL_CATS];
 
 	ImageElement logo;
 	TextElement title;

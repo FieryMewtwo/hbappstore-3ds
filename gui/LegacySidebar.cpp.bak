@@ -1,39 +1,4 @@
 #include "AppList.hpp"
-#include "Sidebar.hpp"
-
-SidebarItem::SidebarItem(int w, int h, const char *imgpath, const char *text, CST_Color *textcolor)
-  : icon(imgpath)
-	, name(text, (25*SCREEN_HEIGHT)/720, textcolor) //TODO: base this off height instead of SCREEN_HEIGHT
-{
-
-	#ifndef RELEASE
-	printf("SidebarItem: h %d, w %d, img %s, text '%s'\n", h, w, imgpath, text);
-	backgroundColor = randomColor(); //red background color
-	hasBackground = true;
-	renderBackground(true);
-	#endif
-
-	height = h;
-	width = w;
-
-	icon.resize(h/1.4, h/1.4);
-	icon.x = w*0.05;
-	icon.centerVerticallyIn(this);
-	super::append(&icon);
-
-	name.x = icon.x+icon.width+((width-icon.x-icon.width) - name.width)/2;
-	name.centerVerticallyIn(this);
-	super::append(&name);
-
-	//category[x].icon->position(30, (logo.y+logo.height) + (x * 70) - 5);
-
-	//category[x].name->position(category[x].icon->x+category[x].icon->width+30, category[x].icon->y+(category[x].icon->height - category[x].name->height)/2);
-}
-
-SidebarItem::~SidebarItem()
-{
-	super::removeAll();
-}
 
 Sidebar::Sidebar()
 	: logo(RAMFS "res/icon.png")
@@ -41,8 +6,8 @@ Sidebar::Sidebar()
 	, subtitle("GPLv3 License", (18 * SCREEN_HEIGHT)/720)
 {
 	// a sidebar consists of:
-	//		the header: an image (ImageElement) and a logo (TextElement)
-	//    a Container of clickable SidebarItems
+	//		a collection of category labels (TextElements),
+	//		and an image (ImageElement) and a logo (TextElement)
 
 	// it also can process input if the cursor goes over it, or a touch
 
@@ -50,40 +15,44 @@ Sidebar::Sidebar()
 
 	// LHS of sidebar is the "minimized" version; width = (SCREEN_HEIGHT/18)+60 (30px on either side of icon)
 
-	width = (365*SCREEN_HEIGHT)/720; //MAGICNUM: copied from 1280x720 manual positioning moosey did
-	height = SCREEN_HEIGHT;
+	printf("Sidebar: screendims=%dx%d\n", SCREEN_WIDTH, SCREEN_HEIGHT); //TODO: encapsulate this debug printf
+	#ifndef RELEASE
+	backgroundColor = {1,0,0}; //red background color
+	hasBackground = true;
+	renderBackground(true);
+	#endif
 
-	// Instantiate and position logo
-	logo.resize(SCREEN_HEIGHT/12, SCREEN_HEIGHT/12); //40px 720p
+	// create image in top left
+	logo.resize(SCREEN_HEIGHT/18, SCREEN_HEIGHT/18); //40px 720p
 	logo.position(30, 50); //i'm fine with these magicnum borders -AC
-	#ifndef RELEASE //Visually mark dev builds to avoid confusion with official releases
+	#ifndef RELEASE
 	logo.angle = 180;
 	#endif
 	super::append(&logo);
 
-	// Instantiate and position title and subtitle
+	// create title for logo, top left
 	title.position(logo.x+logo.width+30, logo.y+(logo.height/2)-(title.height+subtitle.height+5)/2);
 	super::append(&title);
 
-	#ifndef RELEASE //Visually mark dev builds to avoid confusion with official releases
+	#ifndef RELEASE
 	subtitle.setText("DEV BUILD");
 	subtitle.update();
 	#endif
 	subtitle.position(title.x, title.y+title.height+5);
 	super::append(&subtitle);
 
-	categoryHolder = new Container(COL_LAYOUT, 0);
-	categoryHolder->position(0, subtitle.y+subtitle.height+5);
-	categoryHolder->width = width;
-	//categoryHolder->height = SCREEN_HEIGHT - categoryHolder->y;
-	super::append(categoryHolder);
-
 	// for every entry in cat names, create a text element
 	// elements 0 through TOTAL_CATS are the sidebar texts (for highlighting)
 	for (int x = 0; x < TOTAL_CATS; x++)
 	{
-		category[x] = new SidebarItem(width, ((SCREEN_HEIGHT - categoryHolder->y)/TOTAL_CATS), (std::string(RAMFS "res/") + cat_value[x] + ".png").c_str(), cat_names[x]);
-		categoryHolder->add(category[x]);
+		category[x].icon = new ImageElement((std::string(RAMFS "res/") + cat_value[x] + ".png").c_str());
+		category[x].icon->resize(SCREEN_HEIGHT/18, SCREEN_HEIGHT/18); //40px on 720p
+		category[x].icon->position(30, (logo.y+logo.height) + (x * 70) - 5);
+		super::append(category[x].icon);
+
+		category[x].name = new TextElement(cat_names[x], (25*SCREEN_HEIGHT)/720);
+		category[x].name->position(category[x].icon->x+category[x].icon->width+30, category[x].icon->y+(category[x].icon->height - category[x].name->height)/2);
+		super::append(category[x].name);
 	}
 
 	// elasticCounter in this class is used to keep track of which element is being pressed down on in touch mode
@@ -96,13 +65,13 @@ Sidebar::~Sidebar()
 	super::removeAll();
 	for (int x = 0; x < TOTAL_CATS; x++)
 	{
-		delete category[x];
-		//delete category[x].icon;
-		//delete category[x].name;
+		delete category[x].icon;
+		delete category[x].name;
 	}
-	if (categoryHolder) delete categoryHolder;
-	if (hider) delete hider;
-	if (hint) delete hint;
+	if (hider)
+		delete hider;
+	if (hint)
+		delete hint;
 }
 
 void Sidebar::addHints()
@@ -120,9 +89,8 @@ void Sidebar::addHints()
 	showCurrentCategory = true;
 }
 
-bool Sidebar::process(InputEvents* event) //Currently disabled; TODO refactor all teh things
+bool Sidebar::process(InputEvents* event) //TODO refactor all teh things
 {
-	return false; //HACK: disable process() to do button testing
 	bool ret = false;
 	int origHighlighted = highlighted;
 
@@ -224,10 +192,10 @@ void Sidebar::render(Element* parent)
   return;
 #endif
 	// draw the light gray bg behind the active category
-	CST_Rect dimens = { 0, 0, 400*SCREEN_HEIGHT/720 - 260*SCREEN_HEIGHT/720 * (appList->itemsPerRow - 3) - 35, 60 }; // TODO: magicnums //TODO: extract this to a method too
+	CST_Rect dimens = { 0, 0, 400 - 260 * (appList->itemsPerRow - 3) - 35, 60 }; // TODO: extract this to a method too
 	dimens.y = 150 + this->curCategory * 70 - 15;					   // TODO: extract formula into method
 
-#if defined(__WIIU__) //TODO, PLATFORMSPECIFIC: move these into an external platform definition
+#if defined(__WIIU__) //TODO: get all these colordefs to an external header
 	CST_Color consoleColor = { 0x3b, 0x3c, 0x4e, 0xFF };
 #elif defined(_3DS)
 	CST_Color consoleColor = { 0xe4, 0x00, 0x0f, 0xFF };
