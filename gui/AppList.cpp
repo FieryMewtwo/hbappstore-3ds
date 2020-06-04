@@ -24,9 +24,9 @@ AppList::AppList(Get* get, Sidebar* sidebar)
 	, sidebar(sidebar)	// the sidebar, which will store the currently selected category info
 	, keyboard(this)
 	, quitBtn("Quit", SELECT_BUTTON, false, 15)
-	, creditsBtn("Credits", Y_BUTTON, false, 15) //HACK: switched X_BUTTON to Y_BUTTON (= minus on wiimote) for testing
-	, sortBtn("Adjust Sort", X_BUTTON, false, 15) //HACK: this was Y_BUTTON
-	, keyboardBtn("Toggle Keyboard", X_BUTTON, false, 15) //HACK: this was Y_BUTTON
+	, creditsBtn("Credits", X_BUTTON, false, 15)
+	, sortBtn("Adjust Sort", Y_BUTTON, false, 15)
+	, keyboardBtn("Toggle Keyboard", Y_BUTTON, false, 15)
 #if defined(MUSIC)
 	, muteBtn(" ", 0, false, 15, 43)
 	, muteIcon(RAMFS "res/mute.png")
