@@ -23,19 +23,27 @@ AppList::AppList(Get* get, Sidebar* sidebar)
 	: get(get)			// the main get instance that contains repo info and stuff
 	, sidebar(sidebar)	// the sidebar, which will store the currently selected category info
 	, keyboard(this)
-	, quitBtn("Quit", SELECT_BUTTON, false, 15)
-	, creditsBtn("Credits", X_BUTTON, false, 15)
-	, sortBtn("Adjust Sort", Y_BUTTON, false, 15)
-	, keyboardBtn("Toggle Keyboard", Y_BUTTON, false, 15)
+	, quitBtn("Quit", SELECT_BUTTON, false, 15*SCREEN_HEIGHT/720)
+	, creditsBtn("Credits", X_BUTTON, false, 15*SCREEN_HEIGHT/720)
+	, sortBtn("Adjust Sort", Y_BUTTON, false, 15*SCREEN_HEIGHT/720)
+	, keyboardBtn("Toggle Keyboard", Y_BUTTON, false, 15*SCREEN_HEIGHT/720)
 #if defined(MUSIC)
-	, muteBtn(" ", 0, false, 15, 43)
+	, muteBtn(" ", 0, false, 15*SCREEN_HEIGHT/720, 43*SCREEN_HEIGHT/720) //TODO: validate that this is fine on lores, audio is disabled on desktop
 	, muteIcon(RAMFS "res/mute.png")
 #endif
 {
-	this->x = 400 - 260 * (itemsPerRow - 3);
+	this->x = 400*SCREEN_HEIGHT/720 - 260*SCREEN_HEIGHT/720 * (itemsPerRow - 3); //TODO: where do the magicnums come from? redefine, possibly based on sidebar
 
 	// the offset of how far along scroll'd we are
 	this->y = 0;
+
+	width = SCREEN_WIDTH - x;
+	height = SCREEN_HEIGHT;
+
+	//Render white background
+	backgroundColor={1,1,1};
+	hasBackground=true;
+	renderBackground();
 
 	// initialize random numbers used for sorting
 	std::srand(unsigned(std::time(0)));
@@ -48,7 +56,7 @@ AppList::AppList(Get* get, Sidebar* sidebar)
 	sortBtn.action = std::bind(&AppList::cycleSort, this);
 #if defined(MUSIC)
 	muteBtn.action = std::bind(&AppList::toggleAudio, this);
-	muteIcon.resize(32, 32);
+	muteIcon.resize(32*SCREEN_HEIGHT/720, 32*SCREEN_HEIGHT/720);
 #endif
 
 	// search buttons
@@ -58,11 +66,11 @@ AppList::AppList(Get* get, Sidebar* sidebar)
 	keyboard.inputCallback = std::bind(&AppList::keyboardInputCallback, this);
 
 	// category text
-	category.setSize(28);
+	category.setSize(28*SCREEN_HEIGHT/720);
 	category.setColor(black);
 
 	// sort mode text
-	sortBlurb.setSize(15);
+	sortBlurb.setSize(15*SCREEN_HEIGHT/720);
 	sortBlurb.setColor(gray);
 
 #if defined(SWITCH)
@@ -76,14 +84,14 @@ AppList::AppList(Get* get, Sidebar* sidebar)
 	update();
 }
 
-bool AppList::process(InputEvents* event)
+bool AppList::process(InputEvents* event)//TODO: check
 {
 	bool ret = false;
 
 	if (event->pressed(ZL_BUTTON) || event->pressed(L_BUTTON))
 	{
 		itemsPerRow = (itemsPerRow == 3) ? 4 : 3;
-		this->x = 400 - 260 * (itemsPerRow - 3);
+		this->x = 400*SCREEN_HEIGHT/720 - 260*SCREEN_HEIGHT/720 * (itemsPerRow - 3); //TODO: stupid magicnums, duplicate of code in line 35
 		update();
 		return true;
 	}
@@ -198,7 +206,7 @@ bool AppList::process(InputEvents* event)
 			this->y = -1 * (curTile->y - 15) + 25;
 
 		// if we're out of range below, recenter at bottom row
-		if (normalizedY > 720 - curTile->height)
+		if (normalizedY > SCREEN_HEIGHT - curTile->height)
 			this->y = -1 * (curTile->y - 3 * (curTile->height - 15)) - 40;
 
 		// if the card is this close to the top, just set it the list offset to 0 to scroll up to the top
@@ -224,19 +232,19 @@ bool AppList::process(InputEvents* event)
 	return ret;
 }
 
-void AppList::render(Element* parent)
+void AppList::render(Element* parent)//TODO: check
 {
 	if (this->parent == NULL)
 		this->parent = parent;
 
 	// draw a white background, 870 wide
-	CST_Rect dimens = { 0, 0, 920 + 260 * (itemsPerRow - 3), 720 };
-	dimens.x = this->x - 35;
-	CST_Color white = { 0xff, 0xff, 0xff, 0xff };
+	//CST_Rect dimens = { 0, 0, 920 + 260 * (itemsPerRow - 3), 720 };
+	//dimens.x = this->x - 35;
+	//CST_Color white = { 0xff, 0xff, 0xff, 0xff };
 
   if (parent != NULL) {
-    CST_SetDrawColor(parent->renderer, white);
-    CST_FillRect(parent->renderer, &dimens);
+    //CST_SetDrawColor(parent->renderer, white);
+    //CST_FillRect(parent->renderer, &dimens);
     this->renderer = parent->renderer;
   }
 
@@ -281,7 +289,7 @@ bool AppList::sortCompare(const Package* left, const Package* right)
 	return priorityLeft < priorityRight;
 }
 
-void AppList::update()
+void AppList::update()//TODO: check
 {
 	if (!get)
 		return;

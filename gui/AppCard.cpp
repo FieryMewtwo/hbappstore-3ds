@@ -22,7 +22,7 @@ AppCard::AppCard(Package* package, AppList* list)
 	, statusicon((RAMFS "res/" + std::string(package->statusString()) + ".png").c_str())
 {
 	// fixed width+height of one app card
-	this->width = 256;  // + 9px margins
+	this->width = 256*SCREEN_HEIGHT/720;  // + 9px margins //TODO: magicnum
 	this->height = ICON_SIZE + 45;
 
 	this->touchable = true;
