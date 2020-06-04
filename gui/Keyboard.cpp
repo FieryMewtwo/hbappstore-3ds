@@ -5,8 +5,8 @@
 Keyboard::Keyboard(AppList* appList)
 	: appList(appList)
 {
-	this->x = 372;
-	this->y = 417;
+	this->x = 372*SCREEN_HEIGHT/720;
+	this->y = 417*SCREEN_HEIGHT/720;
 
 	this->isAbsolute = true;
 
@@ -221,7 +221,7 @@ void Keyboard::updateSize()
 		delete i;
 	super::removeAll();
 
-	this->width = 900;
+	this->width = 900*SCREEN_HEIGHT/720;
 	this->height = (304 / 900.0) * width;
 
 	// set up lots of scaling variables based on the width/height
