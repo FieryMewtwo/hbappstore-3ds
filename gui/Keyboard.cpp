@@ -259,7 +259,7 @@ void Keyboard::updateSize()
 	// go through and draw each of the three rows at the right position
 	for (int x = 0; x < rowsCount; x++)
 	{
-		Element* rowText = new TextElement(rows[x].c_str(), textSize, &gray, true);
+		Element* rowText = new TextElement(rows[x].c_str(), textSize, &gray, MONOSPACED);
 		rowText->position(kXPad + x * kXOff, kYPad + x * kYOff - (rowText->height / 2));
 		super::append(rowText);
 	}
@@ -271,11 +271,11 @@ void Keyboard::updateSize()
 
 	int textSize2 = (int)((16 / 400.0) * width);
 
-	Element* delButton = new TextElement("DEL", textSize2, &gray, false);
+	Element* delButton = new TextElement("DEL", textSize2, &gray, NORMAL);
 	delButton->position(dPos2, dHeight2);
 	super::append(delButton);
 
-	Element* spaceButton = new TextElement("SPACE", textSize2, &gray, false);
+	Element* spaceButton = new TextElement("SPACE", textSize2, &gray, NORMAL);
 	spaceButton->position(sPos2, dHeight2);
 	super::append(spaceButton);
 }

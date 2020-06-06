@@ -132,7 +132,7 @@ ErrorScreen::ErrorScreen(std::string troubleshootingText) //TODO: add 4:3 layout
 	: icon(RAMFS "res/icon.png")
 	, title("Homebrew App Store", 25*SCREEN_HEIGHT/720)
 	, errorMessage("Couldn't connect to the Internet!", 40*SCREEN_HEIGHT/720)
-	, troubleshooting((std::string("Troubleshooting:\n") + troubleshootingText).c_str(), 20*SCREEN_HEIGHT/720, NULL, false, 600*SCREEN_HEIGHT/720)
+	, troubleshooting((std::string("Troubleshooting:\n") + troubleshootingText).c_str(), 20*SCREEN_HEIGHT/720, NULL, NORMAL, 600*SCREEN_HEIGHT/720)
 	, btnQuit("Quit", SELECT_BUTTON, false, 15)
 {
 	icon.position(470*SCREEN_HEIGHT/720, 25*SCREEN_HEIGHT/720);

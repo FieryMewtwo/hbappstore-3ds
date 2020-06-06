@@ -27,7 +27,7 @@ AboutScreen::AboutScreen(Get* get)
 	        return new ImageElement(RAMFS "res/4TU.png");
         })
 	, creds("Licensed under the GPLv3 license. This app is free and open source because the users (like you!) deserve it.\nLet's support homebrew and the right to control what software we run on our own devices!",
-			(20*SCREEN_HEIGHT/720), &black, false, (SCREEN_WIDTH-40))
+			(20*SCREEN_HEIGHT/720), &black, NORMAL, (SCREEN_WIDTH-40))
 {
 
 	// TODO: show current app status somewhere
@@ -153,7 +153,7 @@ void AboutScreen::credHead(const char* header, const char* blurb)
 	head->text->position(40, lastAvi->y+lastAvi->height+10);
 	super::append(head->text);
 
-	head->desc = new TextElement(blurb, (23*SCREEN_HEIGHT)/720, &gray, false, (SCREEN_WIDTH*15)/16);
+	head->desc = new TextElement(blurb, (23*SCREEN_HEIGHT)/720, &gray, NORMAL, (SCREEN_WIDTH*15)/16);
 	head->desc->position(40, head->text->y+head->text->height+10);
 	super::append(head->desc);
 
