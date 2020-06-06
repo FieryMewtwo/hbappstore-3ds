@@ -7,6 +7,16 @@
 [![twitter](https://img.shields.io/twitter/follow/wiiubru.svg?label=twitter&style=flat-square)](https://twitter.com/wiiubru)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome!-tomato.svg?style=flat-square)](http://makeapullrequest.com)
 
+---
+
+***NOTE:*** This is the `wiiPlusUnivUI` branch by Alex. Development here is forked from master and depends on the `alex-dev` branch of Chesto v1.0 for fixes and features. This branch originally started as a Wii port, but expanded to include a full UI refactor to support arbitrary resolutions and aspect ratios, clean up idiosyncrasies, and purge direct Chesto rendering calls wherever possible.
+
+Major UI architecture changes will almost certainly impact, if not completely break UI on 3DS; I do not have a device to test for this platform, and the existing 3DS work (as of June 2020) is a hacky, invasive network of `#define`s on top of the patchwork mess of old pre-Chesto UI code. 3DS support has not been explicitly removed, but it is probably utterly broken.
+
+The 3DS low-res dual-screen layout is dissimilar enough to other platforms to make it impractical to target during this rewrite. However, the simplifications made should make reimplementing the 3DS UI both easier and cleaner. Then again, it may be better to move 3DS layouts to completely new classes and/or perform other sweeping architectural changes: once `wiiPlusUnivUI` is merged to master, a decision can be made on this matter.
+
+---
+
 A graphical frontend to the [get package manager](https://github.com/vgmoose/libget) for downloading and managing homebrew on video game consoles, such as the Nintendo Switch and Wii U. This is a replacement to the older [Wii U Homebrew App Store](https://github.com/vgmoose/wiiu-hbas).
 
 ## Supported Platforms
