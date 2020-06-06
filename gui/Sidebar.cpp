@@ -6,11 +6,11 @@ SidebarItem::SidebarItem(int w, int h, const char *imgpath, const char *text, CS
 	, name(text, (25*SCREEN_HEIGHT)/720, textcolor) //TODO: base this off height instead of SCREEN_HEIGHT
 {
 
-	#ifndef RELEASE
-	printf("SidebarItem: h %d, w %d, img %s, text '%s'\n", h, w, imgpath, text);
-	backgroundColor = randomColor(); //red background color
-	hasBackground = true;
-	renderBackground(true);
+  #ifndef RELEASE
+	//printf("SidebarItem: h %d, w %d, img %s, text '%s'\n", h, w, imgpath, text);
+	//backgroundColor = randomColor(); //red background color
+	//hasBackground = true;
+	//renderBackground(true);
 	#endif
 
 	height = h;
@@ -122,7 +122,7 @@ void Sidebar::addHints()
 
 bool Sidebar::process(InputEvents* event) //Currently disabled; TODO refactor all teh things
 {
-	return false; //HACK: disable process() to do button testing
+	//return false; //HACK: disable process() to do button testing
 	bool ret = false;
 	int origHighlighted = highlighted;
 
@@ -151,7 +151,6 @@ bool Sidebar::process(InputEvents* event) //Currently disabled; TODO refactor al
 		if (this->highlighted >= TOTAL_CATS) this->highlighted = TOTAL_CATS - 1;
 	}
 
-///////////BEGIN OLD TOUCH CODE, NEEDS TO BE REWORKED
 #if !defined(_3DS) && !defined(_3DS_MOCK)
 	// saw click down, set dragging state
 	if (event->isTouchDown())
@@ -160,23 +159,16 @@ bool Sidebar::process(InputEvents* event) //Currently disabled; TODO refactor al
 		this->highlighted = -1;
 
 		// go through the categories and see if this touch down was in one of them, to show it highlighted
-		// TODO: uses similar code from below... really all this sidebar stuff shoould be refactored to use ListElement
-		// and every category itself should be a CategoryLabel just like an AppCard consists of images + text
-		for (int x = 0; x < TOTAL_CATS; x++)
+		for (int i = 0; i < TOTAL_CATS; i++) if (event->touchIn(category[i]->xAbs, category[i]->yAbs, category[i]->width, category[i]->height))
 		{
-			int xc = 0, yc = 150 + x * 70 - 15, width = 400 - 260 * (appList->itemsPerRow - 3) - 35, height = 60;
-			if (event->touchIn(xc, yc, width, height))
-			{
-				// touch is over an element of the sidebar, set the elasticCounter
-				elasticCounter = x;
-				break;
-			}
+			// touch is over an element of the sidebar, set the elasticCounter
+			elasticCounter = i;
+			break;
 		}
 
 		return true;
 	}
 #endif
-/////////////END TOUCH CODE
 
 	// detect if a click is on one of the sidebar elements
 	// (or we saw the A button be pressed)
@@ -187,17 +179,17 @@ bool Sidebar::process(InputEvents* event) //Currently disabled; TODO refactor al
 		elasticCounter = -1; // reset highlighted one
 
 		// check if it's one of the text elements
-		for (int x = 0; x < TOTAL_CATS; x++)
+		for (int i = 0; i < TOTAL_CATS; i++)
 		{
-			int xc = 0, yc = 150 + x * 70 - 15, width = 400 - 260 * (appList->itemsPerRow - 3) - 35, height = 60; // TODO: extract formula into method (same as AppList x value)
-			if ((event->touchIn(xc, yc, width, height) && event->isTouchUp()) || (event->held(A_BUTTON) && this->highlighted == x))
+			//int xc = 0, yc = 150 + x * 70 - 15, width = 400 - 260 * (appList->itemsPerRow - 3) - 35, height = 60; // TODO: extract formula into method (same as AppList x value)
+			if ((event->touchIn(category[i]->xAbs, category[i]->yAbs, category[i]->width, category[i]->height) && event->isTouchUp()) || (event->held(A_BUTTON) && this->highlighted == i))
 			{
 				// if it's a touch up, let's make sure this is the same one we touched down on
-				if (event->isTouchUp() && previouslySelected >= 0 && x != previouslySelected)
+				if (event->isTouchUp() && previouslySelected >= 0 && i != previouslySelected)
 					return true;
 
 				// saw touchup on a category, adjust active category
-				this->curCategory = x;
+				this->curCategory = i;
 
 				// since we updated the active category, we need to update the app listing
 				if (this->appList != NULL)
@@ -217,7 +209,7 @@ bool Sidebar::process(InputEvents* event) //Currently disabled; TODO refactor al
 	return ret;
 }
 
-void Sidebar::render(Element* parent)
+void Sidebar::render(Element* parent) //TODO: magicnums and direct draw functions lie here
 {
 #if defined(_3DS) || defined(_3DS_MOCK) //TODO: get rid of this BS and just don't instantiate a Sidebar on 3DS
   // no sidebar on 3ds
