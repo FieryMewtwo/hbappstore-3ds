@@ -2,7 +2,7 @@
 #include "AppList.hpp"
 #include "MainDisplay.hpp"
 
-#define TEXT_SIZE	13 / SCALER
+#define TEXT_SIZE	(13 / SCALER)*SCREEN_HEIGHT/720
 
 CST_Color AppCard::gray = { 80, 80, 80, 0xff };
 CST_Color AppCard::black = { 0, 0, 0, 0xff };
@@ -49,6 +49,8 @@ AppCard::AppCard(Package* package, AppList* list)
 	super::append(&appname);
 	super::append(&author);
 	super::append(&statusicon);
+
+	printf("AppCard: title %s, xywh %dx%d %dx%d\n", package->title.c_str(), x, y, width, height);
 }
 
 void AppCard::update()
