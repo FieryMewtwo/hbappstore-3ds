@@ -32,6 +32,7 @@ AppList::AppList(Get* get, Sidebar* sidebar)
 	, muteIcon(RAMFS "res/mute.png")
 #endif
 {
+	setDebugName("AppList");
 	this->x = 400*SCREEN_HEIGHT/720 - 260*SCREEN_HEIGHT/720 * (itemsPerRow - 3); //TODO: where do the magicnums come from? redefine, possibly based on sidebar
 
 	// the offset of how far along scroll'd we are
