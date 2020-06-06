@@ -2,7 +2,7 @@
 #include "AppList.hpp"
 #include "MainDisplay.hpp"
 
-#define TEXT_SIZE	(13 / SCALER)*SCREEN_HEIGHT/720
+#define TEXT_SIZE	13*SCREEN_HEIGHT/720 //used to be 13/SCALER
 
 CST_Color AppCard::gray = { 80, 80, 80, 0xff };
 CST_Color AppCard::black = { 0, 0, 0, 0xff };
@@ -23,7 +23,7 @@ AppCard::AppCard(Package* package, AppList* list)
 {
 	// fixed width+height of one app card
 	this->width = 256*SCREEN_HEIGHT/720;  // + 9px margins //TODO: magicnum
-	this->height = ICON_SIZE + 45;
+	this->height = (150+45)*SCREEN_HEIGHT/720; //used to be 45+ICON_SIZE (PLATFORMSPECIFIC). New calculations based on generic/Switch dimensions. 45px is margin for text
 
 	this->touchable = true;
 
@@ -35,9 +35,9 @@ AppCard::AppCard(Package* package, AppList* list)
 	icon.resize(ICON_SIZE, ICON_SIZE);
   this->width = 85;
 #else
-  icon.resize(256, ICON_SIZE);
+  icon.resize(256*SCREEN_HEIGHT/720, 150*SCREEN_HEIGHT/720);
 #endif
-	statusicon.resize(30 / SCALER, 30 / SCALER);
+	statusicon.resize(30*SCREEN_HEIGHT/720, 30*SCREEN_HEIGHT/720);
 
 	super::append(&icon);
 
@@ -49,29 +49,22 @@ AppCard::AppCard(Package* package, AppList* list)
 	super::append(&appname);
 	super::append(&author);
 	super::append(&statusicon);
-
-	printf("AppCard: title %s, xywh %dx%d %dx%d\n", package->title.c_str(), x, y, width, height);
 }
 
-void AppCard::update()
+void AppCard::update() // update the position of the elements
 {
-	int w, h;
-
-	// update the position of the elements
-
 	icon.position(0, 0);
-	version.position(40, icon.height + 10);
-	status.position(40, icon.height + 25);
+	statusicon.position(4*SCREEN_HEIGHT/720, icon.height+(height-icon.height-statusicon.height)/2);
 
-  int spacer = this->width - 11; // 245 on 720p
+	appname.position(0, icon.height+(height-icon.height-appname.height-author.height)/2);
+	appname.alignRightWith(&icon, 11*SCREEN_HEIGHT/720); //BUG, TODO: for some reason, alignRightWith(this) gives weird behavior, with text sometimes aligning to the wrong card
+	version.position(statusicon.x+statusicon.width+6*SCREEN_HEIGHT/720, 0);
+	version.alignBottomWith(&appname);
 
-	appname.getTextureSize(&w, &h);
-	appname.position(spacer - w, icon.height + 5);
-
-	author.getTextureSize(&w, &h);
-	author.position(spacer - w, icon.height + 25);
-
-	statusicon.position(4, icon.height + 10);
+	author.position(0, appname.y+appname.height);
+	author.alignRightWith(&icon, 11*SCREEN_HEIGHT/720);
+	status.position(statusicon.x+statusicon.width+6*SCREEN_HEIGHT/720, 0);
+	status.alignBottomWith(&author);
 }
 
 // Trigger the icon download (if the icon wasn't already cached)
