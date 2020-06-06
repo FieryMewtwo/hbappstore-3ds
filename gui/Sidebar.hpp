@@ -50,11 +50,12 @@ public:
 	const char* cat_value[TOTAL_CATS] = { "_search", "_all", "game", "emu", "tool", "advanced", "theme", "_misc" };
 #endif
 
+	ImageElement logo;
+
 private:
 	Container* categoryHolder;
 	SidebarItem* category[TOTAL_CATS];
 
-	ImageElement logo;
 	TextElement title;
 	TextElement subtitle;
 
