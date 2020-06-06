@@ -28,9 +28,9 @@ public:
 
 private:
 	// banner/text constants
-	const int MARGIN = 60;
+	const int MARGIN = 60*SCREEN_HEIGHT/720;
 	const int BANNER_X = MARGIN + 5;
-	const int BANNER_Y = 140;
+	const int BANNER_Y = 140*SCREEN_HEIGHT/720;
 
 	TextElement title;
 	TextElement title2;

@@ -23,20 +23,20 @@ AppDetails::AppDetails(Package* package, AppList* appList)
 	, get(appList->get)
 	, appList(appList)
 	, downloadProgress()
-	, download(getAction(package), A_BUTTON, true, 30 / SCALER)
-	, cancel("Cancel", B_BUTTON, true, 30 / SCALER, download.width)
-	, details(getPackageDetails(package).c_str(), 20, &white, false, 300)
+	, download(getAction(package), A_BUTTON, true, 30*SCREEN_HEIGHT/720)
+	, cancel("Cancel", B_BUTTON, true, 30*SCREEN_HEIGHT/720, download.width)
+	, details(getPackageDetails(package).c_str(), 20*SCREEN_HEIGHT/720, &white, false, 300*SCREEN_HEIGHT/720)
 	, content(package, appList->useBannerIcons)
-	, downloadStatus("Download Status", 30 / SCALER, &white)
+	, downloadStatus("Download Status", 30*SCREEN_HEIGHT/720, &white)
 {
 	// TODO: show current app status somewhere
 
 	// download/update/remove button (2)
 
-	download.position(970, 550);
+	download.position(970*SCREEN_HEIGHT/720, 550*SCREEN_HEIGHT/720);
 	download.action = std::bind(&AppDetails::proceed, this);
 
-	cancel.position(970, 630);
+	cancel.position(970*SCREEN_HEIGHT/720, 630*SCREEN_HEIGHT/720);
 	cancel.action = std::bind(&AppDetails::back, this);
 
 #if defined(_3DS) || defined(_3DS_MOCK)
@@ -52,8 +52,8 @@ AppDetails::AppDetails(Package* package, AppList* appList)
 
 	if (package->status != GET && (hasBinary || isTheme))
 	{
-		download.position(970, 470);
-		cancel.position(970, 630);
+		download.position(970*SCREEN_HEIGHT/720, 470*SCREEN_HEIGHT/720); //TODO: why these random y-position adjustments?
+		cancel.position(970*SCREEN_HEIGHT/720, 630*SCREEN_HEIGHT/720);
 
 		const char* buttonLabel = "Launch";
 		bool injectorPresent = false;
@@ -71,7 +71,7 @@ AppDetails::AppDetails(Package* package, AppList* appList)
 			this->canLaunch = true;
 
 			start = new Button(buttonLabel, START_BUTTON, true, 30, download.width);
-			start->position(970, 550);
+			start->position(970*SCREEN_HEIGHT/720, 550*SCREEN_HEIGHT/720);
 			start->action = std::bind(&AppDetails::launch, this);
 			super::append(start);
 		}
@@ -80,7 +80,7 @@ AppDetails::AppDetails(Package* package, AppList* appList)
 
 	// more details
 
-	details.position(940, 50);
+	details.position(940*SCREEN_HEIGHT/720, 50*SCREEN_HEIGHT/720);
 	super::append(&details);
 
 	// the scrollable portion of the app details page
@@ -227,8 +227,8 @@ void AppDetails::launch()
 	if (!successLaunch)
 	{
 		printf("Failed to launch.");
-		errorText = new TextElement("Couldn't launch app", 24, &red, false, 300);
-		errorText->position(970, 430);
+		errorText = new TextElement("Couldn't launch app", 24*SCREEN_HEIGHT/720, &red, false, 300);
+		errorText->position(970*SCREEN_HEIGHT/720, 430*SCREEN_HEIGHT/720);
 		super::append(errorText);
 		this->canLaunch = false;
 	}
@@ -359,7 +359,7 @@ void AppDetails::render(Element* parent)
 	if (this->parent == NULL)
 		this->parent = parent;
 
-	// draw white background
+  // draw white background //TODO: replace this with proper Element backgrounds
 	CST_Rect dimens = { 0, 0, 920, PANE_WIDTH };
 
 	CST_Color white = { 0xff, 0xff, 0xff, 0xff };
@@ -464,16 +464,16 @@ AppDetailsContent::AppDetailsContent(Package *package, bool useBannerIcons)
 	title.position(MARGIN, 30);
 	super::append(&title);
 
-	reportIssue.position(920 - MARGIN - reportIssue.width, 45);
+	reportIssue.position(920*SCREEN_HEIGHT/720 - MARGIN - reportIssue.width, 45*SCREEN_HEIGHT/720);
 	super::append(&reportIssue);
 
-	moreByAuthor.position(reportIssue.x - 20 - moreByAuthor.width, 45);
+	moreByAuthor.position(reportIssue.x - 20 - moreByAuthor.width, 45*SCREEN_HEIGHT/720);
 	super::append(&moreByAuthor);
 
 	if (!useBannerIcons)
 		banner.setScaleMode(SCALE_PROPORTIONAL_WITH_BG);
 
-	banner.resize(767 / SCALER, 193 / SCALER);
+	banner.resize(767*SCREEN_HEIGHT/720, 193*SCREEN_HEIGHT/720);
 	banner.position(BANNER_X / SCALER, BANNER_Y);
 	super::append(&banner);
 
