@@ -113,6 +113,7 @@ int MainDisplay::updateLoader(void* clientp, double dltotal, double dlnow, doubl
 
 	// don't update the GUI too frequently here, it slows down downloading
 	// (never return early if it's 100% done)
+	// TODO: heckin' multithread this
 	if (diff < 32 && amount != 1)
 		return 0;
 
