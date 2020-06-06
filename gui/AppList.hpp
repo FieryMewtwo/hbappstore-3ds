@@ -55,6 +55,10 @@ public:
 
 	Keyboard keyboard;
 
+	// Margin/spacing constants
+	int marginBetweenCards = (15*SCREEN_HEIGHT/720);
+	int horizontalMargin = (20*SCREEN_HEIGHT/720); // Margin from left/right content edge to edge of Element
+
 private:
 	bool sortCompare(const Package* left, const Package* right);
 	std::random_device randDevice;

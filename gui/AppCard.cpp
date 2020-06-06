@@ -2,12 +2,14 @@
 #include "AppList.hpp"
 #include "MainDisplay.hpp"
 
-#define TEXT_SIZE	13*SCREEN_HEIGHT/720 //used to be 13/SCALER
+//Mega TODO: remove dependency on SCREEN_HEIGHT maybe? This should only depend on its own dimensions
+
+#define TEXT_SIZE	13*w/256 //used to be 13/SCALER
 
 CST_Color AppCard::gray = { 80, 80, 80, 0xff };
 CST_Color AppCard::black = { 0, 0, 0, 0xff };
 
-AppCard::AppCard(Package* package, AppList* list)
+AppCard::AppCard(Package* package, AppList* list, int w)
 	: package(package)
 	, list(list)
 	, icon(package->getIconUrl().c_str(), []{
@@ -21,9 +23,9 @@ AppCard::AppCard(Package* package, AppList* list)
 	, author(package->author.c_str(), TEXT_SIZE, &gray)
 	, statusicon((RAMFS "res/" + std::string(package->statusString()) + ".png").c_str())
 {
-	// fixed width+height of one app card
-	this->width = 256*SCREEN_HEIGHT/720;  // + 9px margins //TODO: magicnum
-	this->height = (150+45)*SCREEN_HEIGHT/720; //used to be 45+ICON_SIZE (PLATFORMSPECIFIC). New calculations based on generic/Switch dimensions. 45px is margin for text
+	// Card aspect ratio is 256:195; icon aspect ratio is 256:150, which is *almost* 16:9
+	this->width = w;
+	this->height = (w*195)/256;
 
 	this->touchable = true;
 
@@ -35,9 +37,9 @@ AppCard::AppCard(Package* package, AppList* list)
 	icon.resize(ICON_SIZE, ICON_SIZE);
   this->width = 85;
 #else
-  icon.resize(256*SCREEN_HEIGHT/720, 150*SCREEN_HEIGHT/720);
+  icon.resize(w, (w*150)/256);
 #endif
-	statusicon.resize(30*SCREEN_HEIGHT/720, 30*SCREEN_HEIGHT/720);
+	statusicon.resize(30*w/256, 30*w/256);
 
 	super::append(&icon);
 
@@ -54,17 +56,17 @@ AppCard::AppCard(Package* package, AppList* list)
 void AppCard::update() // update the position of the elements
 {
 	icon.position(0, 0);
-	statusicon.position(4*SCREEN_HEIGHT/720, icon.height+(height-icon.height-statusicon.height)/2);
+	statusicon.position(4*(this->width)/256, icon.height+(height-icon.height-statusicon.height)/2);
 
 	appname.position(0, icon.height+(height-icon.height-appname.height-author.height)/2);
-	appname.alignRightWith(&icon, 11*SCREEN_HEIGHT/720); //BUG, TODO: for some reason, alignRightWith(this) gives weird behavior, with text sometimes aligning to the wrong card
-	version.position(statusicon.x+statusicon.width+6*SCREEN_HEIGHT/720, 0);
-	version.alignBottomWith(&appname);
+	appname.alignRightWith(&icon, 11*(this->width)/256); //BUG, TODO: for some reason, alignRightWith(this) gives weird behavior, with text sometimes aligning to the wrong card
+	version.position(statusicon.x+statusicon.width+6*(this->width)/256, 0);
+	version.alignBaselineWith(&appname);
 
 	author.position(0, appname.y+appname.height);
-	author.alignRightWith(&icon, 11*SCREEN_HEIGHT/720);
-	status.position(statusicon.x+statusicon.width+6*SCREEN_HEIGHT/720, 0);
-	status.alignBottomWith(&author);
+	author.alignRightWith(&icon, 11*(this->width)/256);
+	status.position(statusicon.x+statusicon.width+6*(this->width)/256, 0);
+	status.alignBaselineWith(&author);
 }
 
 // Trigger the icon download (if the icon wasn't already cached)
@@ -74,7 +76,7 @@ void AppCard::handleIconLoad()
 	if (iconFetch)
 		return;
 
-	int twoCardsHeight = (this->height + 15) * 2;
+	int twoCardsHeight = (this->height + list->marginBetweenCards) * 2;
 
 	if ((list->y + this->height) < -twoCardsHeight)
 		return;

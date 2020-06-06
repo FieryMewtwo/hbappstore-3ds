@@ -33,13 +33,13 @@ AppList::AppList(Get* get, Sidebar* sidebar)
 #endif
 {
 	setDebugName("AppList");
-	this->x = 400*SCREEN_HEIGHT/720 - 260*SCREEN_HEIGHT/720 * (itemsPerRow - 3); //TODO: where do the magicnums come from? redefine, possibly based on sidebar
+	this->x = sidebar->x+sidebar->width; //400*SCREEN_HEIGHT/720 - 260*SCREEN_HEIGHT/720 * (itemsPerRow - 3); //TODO: where do the magicnums come from? redefine, possibly based on sidebar
 
 	// the offset of how far along scroll'd we are
 	this->y = 0;
 
 	width = SCREEN_WIDTH - x;
-	height = SCREEN_HEIGHT;
+	height = SCREEN_HEIGHT; //This is only for loading; this is extended to match the actual height of all the AppCards later.
 
 	//Render white background
 	backgroundColor={1,1,1};
@@ -92,7 +92,7 @@ bool AppList::process(InputEvents* event)//TODO: check
 	if (event->pressed(ZL_BUTTON) || event->pressed(L_BUTTON))
 	{
 		itemsPerRow = (itemsPerRow == 3) ? 4 : 3;
-		this->x = 400*SCREEN_HEIGHT/720 - 260*SCREEN_HEIGHT/720 * (itemsPerRow - 3); //TODO: stupid magicnums, duplicate of code in line 35
+		this->x = sidebar->x+sidebar->width; //400*SCREEN_HEIGHT/720 - 260*SCREEN_HEIGHT/720 * (itemsPerRow - 3); //TODO: stupid magicnums, duplicate of code in line 35
 		update();
 		return true;
 	}
@@ -204,11 +204,11 @@ bool AppList::process(InputEvents* event)//TODO: check
 
 		// if we're out of range above, recenter at the top row
 		if (normalizedY < 0)
-			this->y = -1 * (curTile->y - 15) + 25;
+			this->y = -1 * (curTile->y - marginBetweenCards) + 25;
 
 		// if we're out of range below, recenter at bottom row
 		if (normalizedY > SCREEN_HEIGHT - curTile->height)
-			this->y = -1 * (curTile->y - 3 * (curTile->height - 15)) - 40;
+			this->y = -1 * (curTile->y - 3 * (curTile->height - marginBetweenCards)) - 40;
 
 		// if the card is this close to the top, just set it the list offset to 0 to scroll up to the top
 		if (this->highlighted < itemsPerRow)
@@ -233,21 +233,10 @@ bool AppList::process(InputEvents* event)//TODO: check
 	return ret;
 }
 
-void AppList::render(Element* parent)//TODO: check
+void AppList::render(Element* parent) //TODO: is this even necessary anymore now that backgrounds are handled by chesto?
 {
-	if (this->parent == NULL)
-		this->parent = parent;
-
-	// draw a white background, 870 wide
-	//CST_Rect dimens = { 0, 0, 920 + 260 * (itemsPerRow - 3), 720 };
-	//dimens.x = this->x - 35;
-	//CST_Color white = { 0xff, 0xff, 0xff, 0xff };
-
-  if (parent != NULL) {
-    //CST_SetDrawColor(parent->renderer, white);
-    //CST_FillRect(parent->renderer, &dimens);
-    this->renderer = parent->renderer;
-  }
+	if (this->parent == NULL) this->parent = parent;
+	if (parent != NULL) this->renderer = parent->renderer;
 
 	super::render(parent);
 }
@@ -308,17 +297,17 @@ void AppList::update()//TODO: check
 	if (curCategoryValue == "_search") {category.setText(std::string("Search: \"") + sidebar->searchQuery + "\"");} // category text
 	else category.setText(sidebar->currentCatName());
 	category.update();
-	category.position(20*SCREEN_HEIGHT/720, 0); //NOTE: y-position was originally 90px 720p, but that seems like too much whitespace imo
-	category.alignBottomWith(&(sidebar->logo));
+	category.position(horizontalMargin, 0); //NOTE: y-position was originally 90px 720p, but that seems like too much whitespace imo.
+	category.alignBottomWith(&(sidebar->logo)); //y-position is now aligned with logo for visual consistency
 	super::append(&category);
 
 	sortBlurb.position(category.x + category.width + SCREEN_HEIGHT/48, 0); // add the search type next to the category in a gray font
 	sortBlurb.setText(sortingDescriptions[sortMode]);
 	sortBlurb.update();
-	sortBlurb.alignBottomWith(&category);
+	sortBlurb.alignBaselineWith(&category);
 	super::append(&sortBlurb);
 
-	quitBtn.position(SCREEN_HEIGHT + 260 * (itemsPerRow - 3), 0); // Quit button
+	quitBtn.position(width-quitBtn.width-horizontalMargin, 0); // Quit button
 	quitBtn.alignBottomWith(&category);
 #if defined(_3DS) || defined(_3DS_MOCK)
   quitBtn.position(SCREEN_WIDTH - quitBtn.width - 5, 20);
@@ -329,23 +318,23 @@ void AppList::update()//TODO: check
 	if (curCategoryValue == "_search")
 	{
 		// add the keyboard
-		keyboardBtn.position(quitBtn.x - 20 - keyboardBtn.width, quitBtn.y);
+		keyboardBtn.position(quitBtn.x - 20*SCREEN_HEIGHT/720 - keyboardBtn.width, quitBtn.y);
 		super::append(&keyboardBtn);
 		keyboard.position(372*SCREEN_HEIGHT/720 + (3 - itemsPerRow) * 132*SCREEN_HEIGHT/720, 417*SCREEN_HEIGHT/720); //TODO: position this sanely without the magicnums
-		super::append(&keyboard);
+		//Keyboard appending deferred until after app list for layering issues
 	}
 	else
 	{
 		// add additional buttons
-		creditsBtn.position(quitBtn.x - 20 - creditsBtn.width, quitBtn.y);
+		creditsBtn.position(quitBtn.x - 20*SCREEN_HEIGHT/720 - creditsBtn.width, quitBtn.y);
 		super::append(&creditsBtn);
-		sortBtn.position(creditsBtn.x - 20 - sortBtn.width, quitBtn.y);
+		sortBtn.position(creditsBtn.x - 20*SCREEN_HEIGHT/720 - sortBtn.width, quitBtn.y);
 		super::append(&sortBtn);
 
 	#if defined(MUSIC) //TODO: test these with music enabled
-		muteBtn.position(sortBtn.x - 20 - muteBtn.width, quitBtn.y);
+		muteBtn.position(sortBtn.x - 20*SCREEN_HEIGHT/720 - muteBtn.width, quitBtn.y);
 		super::append(&muteBtn);
-		muteIcon.position(sortBtn.x - 20 - muteBtn.width + 5, quitBtn.y + 5);
+		muteIcon.position(sortBtn.x - 20*SCREEN_HEIGHT/720 - muteBtn.width + 5, quitBtn.y + 5);
 		super::append(&muteIcon);
 	#endif
 	}
@@ -383,14 +372,19 @@ void AppList::update()//TODO: check
 		}
 
 		// create and position the AppCard for the package
-		appCards.emplace_back(package, this);
+		appCards.emplace_back(package, this, (width-(2*horizontalMargin)-(itemsPerRow-1)*marginBetweenCards)/itemsPerRow);
 		AppCard& card = appCards.back();
 		card.index = appCards.size() - 1;
-		card.position(25*SCREEN_HEIGHT/720 + (card.index % itemsPerRow) * (card.width + 9 / SCALER), 145*SCREEN_HEIGHT/720 + (card.height + 15) * (card.index / itemsPerRow)); //TODO magicnums
+		//card.position(category.x + (card.index % itemsPerRow) * (card.width + 9 / SCALER), category.y+category.height+30*SCREEN_HEIGHT/720 + (card.height + marginBetweenCards) * (card.index / itemsPerRow)); //TODO magicnums
+		card.position(category.x + (card.index % itemsPerRow) * (card.width + marginBetweenCards),
+		              category.y+category.height+30*SCREEN_HEIGHT/720 + (card.height + marginBetweenCards) * (card.index / itemsPerRow));
 		card.update();
 		super::append(&card);
+		height = std::max(SCREEN_HEIGHT, card.y+card.height+marginBetweenCards);
 	}
 	totalCount = appCards.size();
+
+	if (curCategoryValue == "_search") super::append(&keyboard); //Layer keyboard over AppCards
 
 	needsUpdate = false;
 }

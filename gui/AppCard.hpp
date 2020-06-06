@@ -12,7 +12,7 @@ class AppList;
 class AppCard : public Element
 {
 public:
-	AppCard(Package* package, AppList* list = nullptr);
+	AppCard(Package* package, AppList* list = nullptr, int w = 256*SCREEN_HEIGHT/720); //, int h = (150+45)*SCREEN_HEIGHT/720); //Defaults to the original hardcoded dimensions
 	void update();
 	bool process(InputEvents* event);
 	void render(Element* parent);
