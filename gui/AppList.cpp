@@ -292,36 +292,75 @@ bool AppList::sortCompare(const Package* left, const Package* right)
 
 void AppList::update()//TODO: check
 {
-	if (!get)
-		return;
+//Initialization
+
+	if (!get) return; //failsafe
 
 #if defined(_3DS) || defined(_3DS_MOCK) //TODO: redefining these in-place is hacky as all hell, this should be init'd properly for 3DS
   itemsPerRow = 3;  // force 3 app cards at time
   this->x = 45; // no sidebar
 #endif
-	// remove elements
-	super::removeAll();
+	super::removeAll(); // remove elements
+	appCards.clear(); // destroy old elements
+	std::string curCategoryValue = sidebar->currentCatValue(); // the current category value from the sidebar
 
-	// destroy old elements
-	appCards.clear();
+//Instantiate topnav text and buttons
+	if (curCategoryValue == "_search") {category.setText(std::string("Search: \"") + sidebar->searchQuery + "\"");} // category text
+	else category.setText(sidebar->currentCatName());
+	category.update();
+	category.position(20*SCREEN_HEIGHT/720, 0); //NOTE: y-position was originally 90px 720p, but that seems like too much whitespace imo
+	category.alignBottomWith(&(sidebar->logo));
+	super::append(&category);
 
-	// the current category value from the sidebar
-	std::string curCategoryValue = sidebar->currentCatValue();
+	sortBlurb.position(category.x + category.width + SCREEN_HEIGHT/48, 0); // add the search type next to the category in a gray font
+	sortBlurb.setText(sortingDescriptions[sortMode]);
+	sortBlurb.update();
+	sortBlurb.alignBottomWith(&category);
+	super::append(&sortBlurb);
 
+	quitBtn.position(SCREEN_HEIGHT + 260 * (itemsPerRow - 3), 0); // Quit button
+	quitBtn.alignBottomWith(&category);
+#if defined(_3DS) || defined(_3DS_MOCK)
+  quitBtn.position(SCREEN_WIDTH - quitBtn.width - 5, 20);
+#else
+	super::append(&quitBtn);
+#endif
+	// update the view for the current category
+	if (curCategoryValue == "_search")
+	{
+		// add the keyboard
+		keyboardBtn.position(quitBtn.x - 20 - keyboardBtn.width, quitBtn.y);
+		super::append(&keyboardBtn);
+		keyboard.position(372*SCREEN_HEIGHT/720 + (3 - itemsPerRow) * 132*SCREEN_HEIGHT/720, 417*SCREEN_HEIGHT/720); //TODO: position this sanely without the magicnums
+		super::append(&keyboard);
+	}
+	else
+	{
+		// add additional buttons
+		creditsBtn.position(quitBtn.x - 20 - creditsBtn.width, quitBtn.y);
+		super::append(&creditsBtn);
+		sortBtn.position(creditsBtn.x - 20 - sortBtn.width, quitBtn.y);
+		super::append(&sortBtn);
+
+	#if defined(MUSIC) //TODO: test these with music enabled
+		muteBtn.position(sortBtn.x - 20 - muteBtn.width, quitBtn.y);
+		super::append(&muteBtn);
+		muteIcon.position(sortBtn.x - 20 - muteBtn.width + 5, quitBtn.y + 5);
+		super::append(&muteIcon);
+	#endif
+	}
+
+//Instantiate package grid
 	// all packages TODO: move some of this filtering logic into main get library
 	// if it's a search, do a search query through get rather than using all packages
 	std::vector<Package*> packages = (curCategoryValue == "_search")
 		? get->search(sidebar->searchQuery)
 		: get->packages;
 
-	// sort the packages
-	if (sortMode == RANDOM)
-		std::shuffle(packages.begin(), packages.end(), randDevice);
-	else
-		std::sort(packages.begin(), packages.end(), std::bind(&AppList::sortCompare, this, std::placeholders::_1, std::placeholders::_2));
+	if (sortMode == RANDOM) std::shuffle(packages.begin(), packages.end(), randDevice); // sort the packages
+	else std::sort(packages.begin(), packages.end(), std::bind(&AppList::sortCompare, this, std::placeholders::_1, std::placeholders::_2));
 
-	// add AppCards for the packages belonging to the current category
-	for (auto &package : packages)
+	for (auto &package : packages) // add AppCards for the packages belonging to the current category
 	{
 		if (curCategoryValue == "_misc")
 		{
@@ -347,62 +386,11 @@ void AppList::update()//TODO: check
 		appCards.emplace_back(package, this);
 		AppCard& card = appCards.back();
 		card.index = appCards.size() - 1;
-		card.position(25 + (card.index % itemsPerRow) * (card.width + 9 / SCALER), 145 + (card.height + 15) * (card.index / itemsPerRow));
+		card.position(25*SCREEN_HEIGHT/720 + (card.index % itemsPerRow) * (card.width + 9 / SCALER), 145*SCREEN_HEIGHT/720 + (card.height + 15) * (card.index / itemsPerRow)); //TODO magicnums
 		card.update();
 		super::append(&card);
 	}
 	totalCount = appCards.size();
-
-	// add quit button
-	quitBtn.position(SCREEN_HEIGHT + 260 * (itemsPerRow - 3), 70);
-
-#if defined(_3DS) || defined(_3DS_MOCK)
-  quitBtn.position(SCREEN_WIDTH - quitBtn.width - 5, 20);
-#else
-	super::append(&quitBtn);
-#endif
-
-	// update the view for the current category
-	if (curCategoryValue == "_search")
-	{
-		// add the keyboard
-		keyboardBtn.position(quitBtn.x - 20 - keyboardBtn.width, quitBtn.y);
-		super::append(&keyboardBtn);
-		keyboard.position(372 + (3 - itemsPerRow) * 132, 417);
-		super::append(&keyboard);
-
-		// category text
-		category.position(20, 90);
-		category.setText(std::string("Search: \"") + sidebar->searchQuery + "\"");
-		category.update();
-		super::append(&category);
-	}
-	else
-	{
-		// add additional buttons
-		creditsBtn.position(quitBtn.x - 20 - creditsBtn.width, quitBtn.y);
-		super::append(&creditsBtn);
-		sortBtn.position(creditsBtn.x - 20 - sortBtn.width, quitBtn.y);
-		super::append(&sortBtn);
-#if defined(MUSIC)
-		muteBtn.position(sortBtn.x - 20 - muteBtn.width, quitBtn.y);
-		super::append(&muteBtn);
-		muteIcon.position(sortBtn.x - 20 - muteBtn.width + 5, quitBtn.y + 5);
-		super::append(&muteIcon);
-#endif
-
-		// category text
-		category.position(20, 90);
-		category.setText(sidebar->currentCatName());
-		category.update();
-		super::append(&category);
-
-		// add the search type next to the category in a gray font
-		sortBlurb.position(category.x + category.width + 15, category.y + 12);
-		sortBlurb.setText(sortingDescriptions[sortMode]);
-		sortBlurb.update();
-		super::append(&sortBlurb);
-	}
 
 	needsUpdate = false;
 }
