@@ -118,8 +118,7 @@ int MainDisplay::updateLoader(void* clientp, double dltotal, double dlnow, doubl
 		return 0;
 
 	MainDisplay* display = (MainDisplay*)RootDisplay::mainDisplay;
-	if (display->spinner)
-		display->spinner->angle += 10;
+	if (display->spinner) display->spinner->angle += 10;
 	display->render(NULL);
 
 	AppDetails::lastFrameTime = CST_GetTicks();
