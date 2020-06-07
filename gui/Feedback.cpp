@@ -12,48 +12,49 @@
 
 Feedback::Feedback(Package* package)
 	: package(package)
-	, title((std::string("Leaving feedback for: \"") + package->title + "\"").c_str(), 25)
+	, title((std::string("Leaving feedback for: \"") + package->title + "\"").c_str(), 25*SCREEN_HEIGHT/720)
 	, icon(package->getIconUrl().c_str(), []{ return new ImageElement(RAMFS "res/default.png"); })
-	, quit("Discard", Y_BUTTON, true, 24)
-	, send("Submit", X_BUTTON, true, 24)
-	, response("If you need to send more detailed feedback, please email us at fight@fortheusers.org", 20, NULL, NORMAL, 360)
+	, quit("Discard", Y_BUTTON, true, 24*SCREEN_HEIGHT/720)
+	, send("Submit", X_BUTTON, true, 24*SCREEN_HEIGHT/720)
+	, response("If you need to send more detailed feedback, please email us at fight@fortheusers.org", 20*SCREEN_HEIGHT/720, NULL, NORMAL, 360)
 #if defined(__WIIU__)
-	, hint("(btw you can press Minus to exit!)", 20, NULL)
+	, hint("(btw you can press Minus to exit!)", 20*SCREEN_HEIGHT/720, NULL)
 #endif
 {
-	title.position(50, 30);
+	title.position(50*SCREEN_HEIGHT/720, 30*SCREEN_HEIGHT/720);
 	super::append(&title);
 
-	icon.position(50, 160);
+	icon.position(0, 160*SCREEN_HEIGHT/720);
+	icon.alignLeftWith(&title);
 #if defined(_3DS) || defined(_3DS_MOCK)
   icon.resize(ICON_SIZE, ICON_SIZE);
 #else
-	icon.resize(256, ICON_SIZE);
+	icon.resize(256*SCREEN_HEIGHT/720, ICON_SIZE);
 #endif
 	super::append(&icon);
 
 	keyboard.inputCallback = std::bind(&Feedback::keyboardInputCallback, this);
-	keyboard.x = 200;
+	keyboard.x = 200*SCREEN_HEIGHT/720;
 	super::append(&keyboard);
 
-	quit.position(470, 340);
+	quit.position(470*SCREEN_HEIGHT/720, 340*SCREEN_HEIGHT/720);
 	quit.action = std::bind(&Feedback::back, this);
 	super::append(&quit);
 
-	send.position(quit.x + quit.width + 25, quit.y);
+	send.position(quit.x + quit.width + 25*SCREEN_HEIGHT/720, quit.y);
 	send.action = std::bind(&Feedback::submit, this);
 	super::append(&send);
 
-	response.position(860, 20);
+	response.position(860*SCREEN_HEIGHT/720, 20*SCREEN_HEIGHT/720);
 	super::append(&response);
 
-	feedback.setSize(23);
-	feedback.setWrappedWidth(730);
-	feedback.position(390, 140);
+	feedback.setSize(23*SCREEN_HEIGHT/720);
+	feedback.setWrappedWidth(730*SCREEN_HEIGHT/720);
+	feedback.position(390*SCREEN_HEIGHT/720, 140*SCREEN_HEIGHT/720);
 	super::append(&feedback);
 
 #if defined(__WIIU__)
-	hint.position(50, 120);
+	hint.position(50*SCREEN_HEIGHT/720, 120*SCREEN_HEIGHT/720);
 	super::append(&hint);
 #endif
 }
