@@ -5,14 +5,6 @@ SidebarItem::SidebarItem(int w, int h, const char *imgpath, const char *text, CS
   : icon(imgpath)
 	, name(text, (25*SCREEN_HEIGHT)/720, textcolor) //TODO: base this off height instead of SCREEN_HEIGHT
 {
-
-  #ifndef RELEASE
-	//printf("SidebarItem: h %d, w %d, img %s, text '%s'\n", h, w, imgpath, text);
-	//backgroundColor = randomColor(); //red background color
-	//hasBackground = true;
-	//renderBackground(true);
-	#endif
-
 	height = h;
 	width = w;
 
@@ -24,10 +16,6 @@ SidebarItem::SidebarItem(int w, int h, const char *imgpath, const char *text, CS
 	name.x = icon.x+icon.width+((width-icon.x-icon.width) - name.width)/2;
 	name.centerVerticallyIn(this);
 	super::append(&name);
-
-	//category[x].icon->position(30, (logo.y+logo.height) + (x * 70) - 5);
-
-	//category[x].name->position(category[x].icon->x+category[x].icon->width+30, category[x].icon->y+(category[x].icon->height - category[x].name->height)/2);
 }
 
 SidebarItem::~SidebarItem()
@@ -55,7 +43,7 @@ Sidebar::Sidebar()
 
 	// Instantiate and position logo
 	logo.resize(SCREEN_HEIGHT/12, SCREEN_HEIGHT/12); //40px 720p
-	logo.position(30, 50); //i'm fine with these magicnum borders -AC
+	logo.position(width*0.05, width*0.05); //i'm fine with these magicnum borders -AC
 	#ifndef RELEASE //Visually mark dev builds to avoid confusion with official releases
 	logo.angle = 180;
 	#endif
@@ -75,7 +63,6 @@ Sidebar::Sidebar()
 	categoryHolder = new Container(COL_LAYOUT, 0);
 	categoryHolder->position(0, subtitle.y+subtitle.height+5);
 	categoryHolder->width = width;
-	//categoryHolder->height = SCREEN_HEIGHT - categoryHolder->y;
 	super::append(categoryHolder);
 
 	// for every entry in cat names, create a text element
@@ -181,7 +168,6 @@ bool Sidebar::process(InputEvents* event) //Currently disabled; TODO refactor al
 		// check if it's one of the text elements
 		for (int i = 0; i < TOTAL_CATS; i++)
 		{
-			//int xc = 0, yc = 150 + x * 70 - 15, width = 400 - 260 * (appList->itemsPerRow - 3) - 35, height = 60; // TODO: extract formula into method (same as AppList x value)
 			if ((event->touchIn(category[i]->xAbs, category[i]->yAbs, category[i]->width, category[i]->height) && event->isTouchUp()) || (event->held(A_BUTTON) && this->highlighted == i))
 			{
 				// if it's a touch up, let's make sure this is the same one we touched down on
@@ -209,53 +195,50 @@ bool Sidebar::process(InputEvents* event) //Currently disabled; TODO refactor al
 	return ret;
 }
 
-void Sidebar::render(Element* parent) //TODO: magicnums and direct draw functions lie here
+void Sidebar::render(Element* parent)
 {
 #if defined(_3DS) || defined(_3DS_MOCK) //TODO: get rid of this BS and just don't instantiate a Sidebar on 3DS
   // no sidebar on 3ds
   return;
 #endif
-	// draw the light gray bg behind the active category
-	CST_Rect dimens = { 0, 0, 400*SCREEN_HEIGHT/720 - 260*SCREEN_HEIGHT/720 * (appList->itemsPerRow - 3) - 35, 60 }; // TODO: magicnums //TODO: extract this to a method too
-	dimens.y = 150 + this->curCategory * 70 - 15;					   // TODO: extract formula into method
 
-#if defined(__WIIU__) //TODO, PLATFORMSPECIFIC: move these into an external platform definition
-	CST_Color consoleColor = { 0x3b, 0x3c, 0x4e, 0xFF };
+#if defined(__WIIU__) //TODO, PLATFORMSPECIFIC: move these into an external platform definition.
+	rgb currentCatColor = { 0x3b, 0x3c, 0x4e };
 #elif defined(_3DS)
-	CST_Color consoleColor = { 0xe4, 0x00, 0x0f, 0xFF };
+	rgb currentCatColor = { 0xe4, 0x00, 0x0f };
 #else
-	CST_Color consoleColor = { 0x67, 0x6a, 0x6d, 0xFF };
+	rgb currentCatColor = { 0x67, 0x6a, 0x6d };
 #endif
 
-	CST_SetDrawColor(parent->renderer, consoleColor);
 
-	if (this->showCurrentCategory)
-		CST_FillRect(parent->renderer, &dimens);
+  for (SidebarItem* item : category) // clear bg colors on all categories
+  {
+    item->hasBackground = false;
+  	item->renderBackground(false);
+  }
+  if (this->showCurrentCategory) // draw the light gray bg behind the active category
+  {
+    category[curCategory]->backgroundColor = currentCatColor;
+    category[curCategory]->hasBackground = true;
+  	category[curCategory]->renderBackground(true);
+  }
 
-	if (appList && appList->touchMode && this->elasticCounter >= 0)
+	if (appList && appList->touchMode && this->elasticCounter >= 0) // If a category is being touched, render a translucent highlight box above it.
 	{
-		CST_Rect dimens2 = { 0, 0, 400, 60 };
-		dimens2.y = 150 + this->elasticCounter * 70 - 15; // TODO: extract formula into method
+    //TODO: the below line is awfully ugly. I feel like a CST_Rect of the absolute dimensions of an Element should be a Chesto feature.
+    CST_Rect rectOfTouchedCategory = {category[elasticCounter]->xAbs, category[elasticCounter]->yAbs, category[elasticCounter]->width, category[elasticCounter]->height};
 		CST_SetDrawBlend(parent->renderer, true);
 		CST_Color highlight = { 0xad, 0xd8, 0xe6, 0x90 };
 		CST_SetDrawColor(parent->renderer, highlight); // TODO: matches the DEEP_HIGHLIGHT color
-		CST_FillRect(parent->renderer, &dimens2);
-	}
-
-	// draw the selected category, if one should be highlighted
-	if (this->highlighted >= 0)
-	{
-		int y = 150 + this->highlighted * 70 - 15;
-		//        rectangleRGBA(parent->renderer, 0, y, dimens.w, y + dimens.h, 0xff, 0x00, 0xff, 0xff);
-
-		for (int x = 0; x < 5; x++)
-		{
-			rectangleRGBA(parent->renderer, dimens.x + x, y + x, dimens.x + dimens.w - x, y + dimens.h - x, 0x66 - x * 10, 0x7c + x * 20, 0x89 + x * 10, 0xFF);
-		}
+		CST_FillRect(parent->renderer, &rectOfTouchedCategory);
 	}
 
 	// render subelements
 	super::render(parent);
+
+  // Placed afterwards to prevent highlight rectangle from being covered by SidebarItem background
+  if (this->highlighted >= 0) for (int i = 0; i < 5; i++) // If a category is selected, draw "highlight" overlay as a series of rectangles.
+		rectangleRGBA(parent->renderer, category[highlighted]->xAbs + i, category[highlighted]->yAbs + i, category[highlighted]->xAbs + category[highlighted]->width - i, category[highlighted]->yAbs + category[highlighted]->height - i, 0x66 - i * 10, 0x7c + i * 20, 0x89 + i * 10, 0xFF);
 }
 
 std::string Sidebar::currentCatName()
