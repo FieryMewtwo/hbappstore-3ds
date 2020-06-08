@@ -360,14 +360,14 @@ void AppDetails::render(Element* parent)
 		this->parent = parent;
 
   // draw white background //TODO: replace this with proper Element backgrounds
-	CST_Rect dimens = { 0, 0, 920, PANE_WIDTH };
+	//CST_Rect dimens = { 0, 0, 920, PANE_WIDTH };
 
-	CST_Color white = { 0xff, 0xff, 0xff, 0xff };
+	//CST_Color white = { 0xff, 0xff, 0xff, 0xff };
 
-	CST_SetDrawColor(parent->renderer, white);
-	CST_FillRect(parent->renderer, &dimens);
+	//CST_SetDrawColor(parent->renderer, white);
+	//CST_FillRect(parent->renderer, &dimens);
 
-	CST_SetDrawColor(parent->renderer, white);
+	//CST_SetDrawColor(parent->renderer, white);
 
 	// draw all elements
 	super::render(parent);
@@ -443,12 +443,12 @@ int AppDetails::updateCurrentlyDisplayedPopup(void* clientp, double dltotal, dou
 }
 
 AppDetailsContent::AppDetailsContent(Package *package, bool useBannerIcons)
-	: reportIssue("Report Issue", Y_BUTTON)
-	, moreByAuthor("More by Author", X_BUTTON)
-	, title(package->title.c_str(), 35, &black)
-	, title2(package->author.c_str(), 27, &gray)
-	, details(package->long_desc.c_str(), 20 / SCALER, &black, false, PANE_WIDTH + 20 / SCALER)
-	, changelog((std::string("Changelog:\n") + package->changelog).c_str(), 20 / SCALER, &black, false, PANE_WIDTH + 20 / SCALER)
+	: reportIssue("Report Issue", Y_BUTTON, false, 20*SCREEN_HEIGHT/720)
+	, moreByAuthor("More by Author", X_BUTTON, false, 20*SCREEN_HEIGHT/720)
+	, title(package->title.c_str(), 35*SCREEN_HEIGHT/720, &black)
+	, title2(package->author.c_str(), 27*SCREEN_HEIGHT/720, &gray)
+	, details(package->long_desc.c_str(), 20*SCREEN_HEIGHT/720, &black, false, PANE_WIDTH + 20 / SCALER)
+	, changelog((std::string("Changelog:\n") + package->changelog).c_str(), 20*SCREEN_HEIGHT/720, &black, false, PANE_WIDTH + 20 / SCALER)
 	, banner(useBannerIcons ? package->getBannerUrl().c_str() : package->getIconUrl().c_str(), [package]{
 			// If the banner fails to load, use an icon banner
 			NetImageElement* icon = new NetImageElement(package->getIconUrl().c_str(), []{
@@ -461,13 +461,13 @@ AppDetailsContent::AppDetailsContent(Package *package, bool useBannerIcons)
 			return icon;
 		})
 {
-	title.position(MARGIN, 30);
+	title.position(MARGIN, MARGIN/2);
 	super::append(&title);
 
 	reportIssue.position(920*SCREEN_HEIGHT/720 - MARGIN - reportIssue.width, 45*SCREEN_HEIGHT/720);
 	super::append(&reportIssue);
 
-	moreByAuthor.position(reportIssue.x - 20 - moreByAuthor.width, 45*SCREEN_HEIGHT/720);
+	moreByAuthor.position(reportIssue.x - 20*SCREEN_HEIGHT/720 - moreByAuthor.width, 45*SCREEN_HEIGHT/720);
 	super::append(&moreByAuthor);
 
 	if (!useBannerIcons)
@@ -477,14 +477,14 @@ AppDetailsContent::AppDetailsContent(Package *package, bool useBannerIcons)
 	banner.position(BANNER_X / SCALER, BANNER_Y);
 	super::append(&banner);
 
-	title2.position(MARGIN, 80);
+	title2.position(MARGIN, 80*SCREEN_HEIGHT/720);
 	super::append(&title2);
 
 	// the main description (wrapped text)
-	details.position((MARGIN / SCALER + 30), banner.y + banner.height + 22);
+	details.position(MARGIN*3/2, banner.y + banner.height + 22*SCREEN_HEIGHT/720);
 	super::append(&details);
 
-	changelog.position((MARGIN / SCALER + 30), details.y + details.height + 30);
+	changelog.position(MARGIN*3/2, details.y + details.height + 30*SCREEN_HEIGHT/720);
 	super::append(&changelog);
 }
 
