@@ -30,7 +30,7 @@ RAMFS_DIR		:=	resin
 # options for code generation
 #---------------------------------------------------------------------------------
 
-CFLAGS		=	-g -O2 -Wall $(MACHDEP) $(INCLUDE) -DSDL1 -DNETWORK_MOCK -DWII -DUSE_FILE32API -DUSE_RAMFS
+CFLAGS		=	-g -O2 -Wall $(MACHDEP) $(INCLUDE) -DSDL1 -DNETWORK -DWII -DUSE_FILE32API -DUSE_RAMFS
 CXXFLAGS	=	$(CFLAGS)
 
 LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
@@ -38,7 +38,8 @@ LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:= -lSDL_ttf -lSDL_gfx -lSDL_mixer -lSDL_image -lfreetype -ljpeg -lpng -lz -lm -lSDL -lSDLmain -lfat -lwiiuse -lbte -laesnd -logc -lwiikeyboard -lbz2 
+LIBS	:= -lSDL_ttf -lSDL_gfx -lSDL_mixer -lSDL_image -lfreetype -ljpeg -lpng -lz -lm -lSDL -lSDLmain -lfat \
+	-lwiiuse -lbte -laesnd -lcurl -lz -lmbedtls -lmbedcrypto -lmbedx509 -lwiisocket -logc -lwiikeyboard -lbz2
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
