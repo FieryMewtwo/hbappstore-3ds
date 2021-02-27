@@ -7,3 +7,4 @@ appstore-sdl1.*
 repos.json
 settings.json
 .get/
+build/*
