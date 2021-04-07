@@ -3,6 +3,7 @@
 *.d
 appstore.*
 appstore-sdl1.*
+hbas.zip
 .gitignore
 repos.json
 settings.json
