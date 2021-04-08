@@ -127,19 +127,22 @@ int MainDisplay::updateLoader(void* clientp, double dltotal, double dlnow, doubl
 }
 
 
-ErrorScreen::ErrorScreen(std::string troubleshootingText) //TODO: add 4:3 layout, reduce the magicnums
+ErrorScreen::ErrorScreen(std::string troubleshootingText)
 	: icon(RAMFS "res/icon.png")
-	, title("Homebrew App Store", 25*SCREEN_HEIGHT/720)
+	, title("Homebrew App Store", (resMode() == HIRES ? 25 : 35)*SCREEN_HEIGHT/720)
 	, errorMessage("Couldn't connect to the Internet!", 40*SCREEN_HEIGHT/720)
-	, troubleshooting((std::string("Troubleshooting:\n") + troubleshootingText).c_str(), 20*SCREEN_HEIGHT/720, NULL, NORMAL, 600*SCREEN_HEIGHT/720)
-	, btnQuit("Quit", SELECT_BUTTON, false, 15)
+	, troubleshooting((std::string("Troubleshooting:\n") + troubleshootingText).c_str(), (resMode() == HIRES ? 20 : 25)*SCREEN_HEIGHT/720, NULL, NORMAL, 600*SCREEN_HEIGHT/720)
+	, btnQuit("Quit", SELECT_BUTTON, false, (resMode() == HIRES ? 15 : 30))
 {
-	icon.position(470*SCREEN_HEIGHT/720, 25*SCREEN_HEIGHT/720);
 	icon.resize(35*SCREEN_HEIGHT/720, 35*SCREEN_HEIGHT/720);
-	title.position(515*SCREEN_HEIGHT/720, 25*SCREEN_HEIGHT/720);
-	errorMessage.position(345*SCREEN_HEIGHT/720, 305*SCREEN_HEIGHT/720);
-	troubleshooting.position(380*SCREEN_HEIGHT/720, 585*SCREEN_HEIGHT/720);
-	btnQuit.position(1130*SCREEN_HEIGHT/720, 630*SCREEN_HEIGHT/720);
+	title.position((SCREEN_WIDTH - title.width + icon.width + 5)/2, 25*SCREEN_HEIGHT/720);
+	icon.position(title.x - icon.width - 2.5, title.y + (title.height-icon.height)/2);
+
+	btnQuit.position(SCREEN_WIDTH-btnQuit.width, SCREEN_HEIGHT-btnQuit.height);
+
+	troubleshooting.position((SCREEN_WIDTH-troubleshooting.width)/2, btnQuit.y - troubleshooting.height - 5);
+
+	errorMessage.position((SCREEN_WIDTH-errorMessage.width)/2, (troubleshooting.y + title.y + title.height - errorMessage.height)/2);
 
 	btnQuit.action = quit;
 
